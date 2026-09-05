@@ -1,0 +1,137 @@
+.order-picker__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-bottom: 12px;
+}
+
+.order-picker__header h2 {
+  margin: 0;
+}
+
+.order-picker__filter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.order-picker__filter select {
+  padding: 4px 6px;
+  border: 1px solid var(--color-border-input);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.order-picker__filter select:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.order-picker__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.order-picker__list button {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--color-text);
+}
+
+.order-picker__list button:hover {
+  background: #f0f2f5;
+}
+
+.order-picker__list button.is-selected {
+  border-color: var(--color-accent);
+  background: #eef4fd;
+}
+
+.order-picker__id {
+  font-weight: 600;
+}
+
+.order-picker__meta {
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+}
+
+.order-picker__scenario {
+  align-self: flex-start;
+  margin-top: 2px;
+  font-size: 0.66rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-accent);
+  background: #eef4fd;
+  padding: 1px 6px;
+  border-radius: var(--radius-pill);
+}
+
+.order-picker__error {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--color-danger-text);
+  font-size: 0.85rem;
+}
+
+.order-picker__error p {
+  margin: 0;
+}
+
+.order-picker__error button,
+.order-picker__load-more {
+  padding: 6px 14px;
+  border: 1px solid var(--color-border-input);
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.order-picker__error button:hover,
+.order-picker__load-more:hover:not(:disabled) {
+  background: #f0f2f5;
+}
+
+.order-picker__load-more {
+  margin-top: 8px;
+  width: 100%;
+  text-align: center;
+}
+
+.order-picker__load-more:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.order-picker__inline-error {
+  margin: 8px 0 0;
+  font-size: 0.78rem;
+  color: var(--color-danger-text);
+}

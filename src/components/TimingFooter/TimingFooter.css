@@ -1,0 +1,56 @@
+.timing-footer__row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  align-items: baseline;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.timing-footer__total {
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+/* Proportional stage bar: a monochromatic ramp on the one existing
+   accent token (each segment is the same --color-accent fill at a
+   different opacity), not four unrelated hues and not the
+   decision/risk semantic colors — those carry a "good/bad" meaning
+   elsewhere in the app that a timing stage must not borrow. Purely
+   decorative/supplementary to the numeric row above, which already
+   carries the same information as accessible text, so the bar itself
+   is aria-hidden. */
+.timing-footer__bar {
+  display: flex;
+  margin-top: 10px;
+  height: 8px;
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  background: var(--color-border);
+}
+
+.timing-footer__segment {
+  height: 100%;
+  background: var(--color-accent);
+}
+
+.timing-footer__segment + .timing-footer__segment {
+  border-left: 1px solid var(--color-surface);
+}
+
+.timing-footer__segment--evidence_ms {
+  opacity: 1;
+}
+
+.timing-footer__segment--decision_ms {
+  opacity: 0.75;
+}
+
+.timing-footer__segment--retrieval_ms {
+  opacity: 0.5;
+}
+
+.timing-footer__segment--narrative_ms {
+  opacity: 0.3;
+}

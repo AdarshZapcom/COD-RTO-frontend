@@ -1,0 +1,85 @@
+.decision-banner {
+  position: relative;
+}
+
+/* The critical-tier alert: solid, full-width, bled to the panel's
+   outer edge (negative margin cancels the .panel padding exactly) so
+   it reads as a distinct top band rather than another badge inside
+   the card. Deliberately solid (var(--color-danger-text) as a fill,
+   not the soft --color-danger-bg used for ordinary badges elsewhere)
+   so it cannot be mistaken for a minor status pill. */
+.decision-banner__critical-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--color-danger-text);
+  color: #fff;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  padding: 12px var(--space-md);
+  margin: -16px -16px 14px;
+}
+
+.decision-banner__critical-icon {
+  font-size: 1.3rem;
+  line-height: 1.2;
+  flex-shrink: 0;
+}
+
+.decision-banner__critical-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.decision-banner__critical-title {
+  display: block;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: 0.85rem;
+  margin-bottom: 4px;
+}
+
+.decision-banner__critical-list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.decision-banner__critical-list li {
+  margin: 2px 0;
+}
+
+.decision-banner__top {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.decision-banner__decision {
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.decision-banner__risk {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.decision-banner__confidence {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.decision-banner__reason {
+  margin: 8px 0 0;
+  font-size: 0.95rem;
+}
+
+.decision-banner__warning-note {
+  margin: 10px 0 0;
+  font-size: 0.8rem;
+  color: var(--color-warning-text);
+}

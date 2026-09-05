@@ -1,0 +1,111 @@
+.adhoc-form__hint {
+  margin: -4px 0 12px;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.adhoc-form form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.adhoc-form__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px 12px;
+}
+
+.adhoc-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.adhoc-form__field label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.adhoc-form input,
+.adhoc-form select {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--color-border-input);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.adhoc-form input:disabled,
+.adhoc-form select:disabled {
+  background: var(--color-bg);
+  cursor: not-allowed;
+}
+
+.adhoc-form input[aria-invalid='true'] {
+  border-color: var(--color-danger-text);
+}
+
+.adhoc-form__error {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--color-danger-text);
+}
+
+.adhoc-form__advanced {
+  border-top: 1px solid var(--color-border);
+  padding-top: 10px;
+}
+
+.adhoc-form__advanced summary {
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+.adhoc-form__advanced[open] summary {
+  margin-bottom: 10px;
+}
+
+.adhoc-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.adhoc-form__reset {
+  padding: 6px 14px;
+  border: 1px solid var(--color-border-input);
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.adhoc-form__reset:hover:not(:disabled) {
+  background: #f0f2f5;
+}
+
+.adhoc-form__reset:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.adhoc-form__actions button[type='submit'] {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  background: var(--color-accent);
+  color: #fff;
+  cursor: pointer;
+}
+
+.adhoc-form__actions button[type='submit']:disabled {
+  background: #9fb7de;
+  cursor: not-allowed;
+}

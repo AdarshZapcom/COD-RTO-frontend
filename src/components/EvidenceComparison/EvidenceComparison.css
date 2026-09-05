@@ -1,0 +1,49 @@
+.evidence-comparison__columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+}
+
+.evidence-comparison__column h3 {
+  font-size: 0.8rem;
+  margin: 0 0 6px;
+  color: var(--color-text-muted);
+}
+
+.evidence-comparison__column--supporting h3 {
+  color: var(--color-success-text);
+}
+
+.evidence-comparison__column--counter h3 {
+  color: var(--color-danger-text);
+}
+
+.evidence-comparison__column ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.evidence-comparison__column--supporting li::marker {
+  color: var(--color-success-text);
+}
+
+.evidence-comparison__column--counter li::marker {
+  color: var(--color-danger-text);
+}
+
+.evidence-comparison__column .empty-state {
+  margin: 0;
+}
+
+/* Panels can end up narrow once the outer investigation-grid drops to
+   a single column on small viewports — stack the two evidence columns
+   there instead of squeezing them side by side. */
+@media (max-width: 480px) {
+  .evidence-comparison__columns {
+    grid-template-columns: 1fr;
+  }
+}
