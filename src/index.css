@@ -18,7 +18,22 @@
   --color-border-input: #d0d5dd;
   --color-text: #1b1f24;
   --color-text-muted: #5b6472;
-  --color-accent: #316dca;
+  --color-accent: #0f74b8;
+  --color-accent-hover: #1f8ad0;
+
+  /* "Chrome" tokens — the dark header bar only (brand match for the Quess
+     hackathon: Quess's own nav bar is a neutral dark charcoal gray, not
+     navy — no blue hue in it at all, the blue is reserved for the accent).
+     Every .panel card intentionally keeps the light tokens above for
+     data legibility — this is a re-theme of the header, not a full dark
+     mode, so --color-bg itself stays untouched (it also doubles as the
+     nested-row fill inside white panels, e.g. TicketsView/InsightsStrip
+     cards, which must not turn dark). */
+  --color-chrome-bg: #232428;
+  --color-chrome-bg-raised: #2d2e33;
+  --color-chrome-border: rgba(255, 255, 255, 0.14);
+  --color-chrome-text: #f5f7fa;
+  --color-chrome-text-muted: #9a9da3;
 
   /* Semantic status colors — success/positive (RELEASE, LOW risk),
      warning/caution (HOLD_FOR_VERIFICATION, MEDIUM risk), danger/critical
@@ -58,29 +73,123 @@ a:focus-visible {
 
 body {
   margin: 0;
-  background: var(--color-bg);
+  /* Quess's own site is a dark nav bar over a light content canvas, not a
+     fully dark page — only .app-header below gets the dark chrome
+     treatment; the canvas stays light so cards/text need no rework. */
+  background: linear-gradient(160deg, #f4f8fc 0%, #e8eef7 100%);
   color: var(--color-text);
 }
 
 .app-shell {
-  max-width: 1200px;
+  max-width: 1360px;
   margin: 0 auto;
-  padding: 16px 24px 48px;
+  padding: 16px 24px;
+  height: 100vh;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
+/* The one dark "chrome" surface in the app — a nav-bar strip, styled to
+   match Quess's own dark header band; everything below it is the light
+   canvas + light panel cards. */
 .app-header {
+  flex-shrink: 0;
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
+  flex-wrap: wrap;
+  background: var(--color-chrome-bg);
+  color: var(--color-chrome-text);
+  padding: 14px 20px;
+  border-radius: var(--radius-md);
 }
 
 .app-header h1 {
   font-size: 1.25rem;
   margin: 0;
+  color: var(--color-chrome-text);
+}
+
+/* Investigate / Ops & tickets — plain local state, not a route (see
+   App.jsx MODE_TABS); a pill-style segmented control so it reads as a
+   view switch, distinct from the underline-style InvestigationTabs
+   below the decision banner. Styled as a dark "housing" with the active
+   tab rendered as a solid accent pill — the same treatment as Quess's
+   own CTA button. */
+.mode-switcher {
+  display: inline-flex;
+  flex-shrink: 0;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--color-chrome-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-chrome-bg-raised);
+}
+
+.mode-switcher__tab {
+  padding: 6px 14px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-chrome-text-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.mode-switcher__tab:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.mode-switcher__tab.is-active {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+/* Investigate mode: a fixed-width rail (order input) beside a main
+   column that owns exactly one always-visible element (DecisionBanner)
+   plus one internally-scrolling region (InvestigationTabs) — the two-
+   region split is what keeps the decision glanceable without scrolling
+   the whole page to reach it. */
+.app-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: var(--space-md);
+}
+
+.app-rail {
+  width: 340px;
+  flex-shrink: 0;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.app-main {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+/* Ops & tickets mode: independent of any selected investigation, so it
+   scrolls as a whole rather than reserving a pinned region. */
+.app-operations {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
 }
 
 .panel {
@@ -88,6 +197,11 @@ body {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: var(--space-md);
+  /* Defensive inheritance-boundary reset: .app-header is dark chrome with
+     light text, so this guarantees every panel's own text stays on the
+     light-theme color regardless of what an ancestor sets. */
+  color: var(--color-text);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.08);
 }
 
 .panel h2 {
@@ -112,6 +226,20 @@ body {
 .panel--error {
   border-color: var(--color-danger-text);
   color: var(--color-danger-text);
+}
+
+/* Below this width the fixed-width rail crowds the main column too
+   much — stack them instead, same fallback spirit as the narrower
+   breakpoints already used inside individual panels. */
+@media (max-width: 860px) {
+  .app-body {
+    flex-direction: column;
+  }
+
+  .app-rail {
+    width: 100%;
+    max-height: 45vh;
+  }
 }
 
 /* Screen-reader-only content (e.g. transient aria-live announcements

@@ -3,14 +3,20 @@ import { getOrderInvestigation, postInvestigate } from './api/client';
 
 import OrderPicker from './components/OrderPicker/OrderPicker.jsx';
 import AdHocOrderForm from './components/AdHocOrderForm/AdHocOrderForm.jsx';
-import EvidencePanel from './components/EvidencePanel/EvidencePanel.jsx';
-import EvidenceComparison from './components/EvidenceComparison/EvidenceComparison.jsx';
-import PrecedentPanel from './components/PrecedentPanel/PrecedentPanel.jsx';
-import NarrativePanel from './components/NarrativePanel/NarrativePanel.jsx';
 import DecisionBanner from './components/DecisionBanner/DecisionBanner.jsx';
-import TimingFooter from './components/TimingFooter/TimingFooter.jsx';
+import InvestigationTabs from './components/InvestigationTabs/InvestigationTabs.jsx';
 import InsightsStrip from './components/InsightsStrip/InsightsStrip.jsx';
 import TicketsView from './components/TicketsView/TicketsView.jsx';
+
+// Investigate = pick/submit one order and see its decision. Ops & tickets =
+// courier x pincode monitoring and open escalations, independent of any
+// selected order. Plain local state, not a route — switching modes never
+// touches the URL or unmounts/loses either screen's own fetched data for
+// longer than a normal remount (both re-fetch cheaply on their own).
+const MODE_TABS = [
+  { key: 'investigate', label: 'Investigate' },
+  { key: 'operations', label: 'Ops & tickets' },
+];
 
 // Single shared "current investigation" object, lifted here per
 // docs/tasks/06-react-frontend.md ("What NOT to build") — no global
@@ -27,6 +33,7 @@ import TicketsView from './components/TicketsView/TicketsView.jsx';
 // state for that shared object, instead of two components racing to
 // set it independently.
 export default function App() {
+  const [mode, setMode] = useState('investigate');
   const [currentInvestigation, setCurrentInvestigation] = useState(null);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [investigationLoading, setInvestigationLoading] = useState(false);
@@ -71,11 +78,10 @@ export default function App() {
       const previous = currentInvestigationRef.current;
       if (previous) {
         // A previous investigation is already on screen (DecisionBanner is
-        // "the one thing visible without scrolling" per its own header
-        // comment) — a failed refresh (e.g. a 404 on a newly selected
-        // order) must not blank it out. Keep showing it and surface the
-        // new error alongside it instead of silently reverting to the
-        // empty state.
+        // pinned above the tabs, always visible without scrolling) — a
+        // failed refresh (e.g. a 404 on a newly selected order) must not
+        // blank it out. Keep showing it and surface the new error
+        // alongside it instead of silently reverting to the empty state.
         setInvestigationError(
           `Couldn't refresh: ${err.message} — still showing the previous investigation for ${previous.order_id}.`,
         );
@@ -98,55 +104,93 @@ export default function App() {
     [runInvestigation],
   );
 
+  // Roving-tabindex arrow nav: only the active mode is Tab-reachable, so
+  // moving the "selected" mode via arrow keys must also move actual DOM
+  // focus there — see the identical pattern/comment in InvestigationTabs.
+  const modeTabRefs = useRef({});
+
+  function focusMode(key) {
+    setMode(key);
+    modeTabRefs.current[key]?.focus();
+  }
+
+  function handleModeKeyDown(event) {
+    if (!['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+    event.preventDefault();
+    const index = MODE_TABS.findIndex((tab) => tab.key === mode);
+    const nextIndex = event.key === 'ArrowRight'
+      ? (index + 1) % MODE_TABS.length
+      : (index - 1 + MODE_TABS.length) % MODE_TABS.length;
+    focusMode(MODE_TABS[nextIndex].key);
+  }
+
   return (
     <div className="app-shell">
       <header className="app-header">
-        <h1>Find the Signal — COD RTO Investigation</h1>
+        <h1>Find the Signal</h1>
+        <div className="mode-switcher" role="tablist" aria-label="View" onKeyDown={handleModeKeyDown}>
+          {MODE_TABS.map((tab) => {
+            const isActive = tab.key === mode;
+            return (
+              <button
+                key={tab.key}
+                type="button"
+                ref={(el) => {
+                  modeTabRefs.current[tab.key] = el;
+                }}
+                role="tab"
+                aria-selected={isActive}
+                tabIndex={isActive ? 0 : -1}
+                className={isActive ? 'mode-switcher__tab is-active' : 'mode-switcher__tab'}
+                onClick={() => setMode(tab.key)}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
       </header>
 
-      <section className="investigation-grid">
-        <OrderPicker onSelectOrder={handleSelectOrder} selectedOrderId={selectedOrderId} />
-        <AdHocOrderForm onSubmit={handleAdHocSubmit} submitting={investigationLoading} />
-      </section>
-
-      {investigationError && (
-        <div className="panel panel--error" role="alert">
-          {investigationError}
-        </div>
-      )}
-
-      {investigationLoading && (
-        <div className="panel empty-state" role="status" aria-live="polite">
-          {currentInvestigation ? 'Updating investigation…' : 'Investigating…'}
-        </div>
-      )}
-
-      {currentInvestigation ? (
-        <>
-          <DecisionBanner investigation={currentInvestigation} />
-
-          <section className="investigation-grid">
-            <EvidencePanel investigation={currentInvestigation} />
-            <EvidenceComparison investigation={currentInvestigation} />
-          </section>
-
-          <section className="investigation-grid">
-            <PrecedentPanel investigation={currentInvestigation} />
-            <NarrativePanel investigation={currentInvestigation} />
-          </section>
-
-          <TimingFooter investigation={currentInvestigation} />
-        </>
-      ) : (
-        !investigationLoading && (
-          <div className="panel empty-state">
-            Pick an order from the list, or submit an ad-hoc order, to see an investigation.
+      {mode === 'investigate' ? (
+        <div className="app-body">
+          <div className="app-rail">
+            <OrderPicker onSelectOrder={handleSelectOrder} selectedOrderId={selectedOrderId} />
+            <AdHocOrderForm onSubmit={handleAdHocSubmit} submitting={investigationLoading} />
           </div>
-        )
-      )}
 
-      <InsightsStrip />
-      <TicketsView />
+          <div className="app-main">
+            {investigationError && (
+              <div className="panel panel--error" role="alert">
+                {investigationError}
+              </div>
+            )}
+
+            {investigationLoading && (
+              <div className="panel empty-state" role="status" aria-live="polite">
+                {currentInvestigation ? 'Updating investigation…' : 'Investigating…'}
+              </div>
+            )}
+
+            {currentInvestigation ? (
+              <>
+                <DecisionBanner investigation={currentInvestigation} />
+                <InvestigationTabs investigation={currentInvestigation} />
+              </>
+            ) : (
+              !investigationLoading && (
+                <div className="panel empty-state">
+                  Pick an order from the list, or submit an ad-hoc order, to see an investigation.
+                </div>
+              )
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="app-operations">
+          <InsightsStrip />
+          <TicketsView />
+        </div>
+      )}
     </div>
   );
 }

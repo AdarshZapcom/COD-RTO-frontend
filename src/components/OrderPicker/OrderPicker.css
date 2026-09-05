@@ -65,7 +65,7 @@
 
 .order-picker__list button.is-selected {
   border-color: var(--color-accent);
-  background: #eef4fd;
+  background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
 }
 
 .order-picker__id {
@@ -85,7 +85,7 @@
   text-transform: uppercase;
   letter-spacing: 0.03em;
   color: var(--color-accent);
-  background: #eef4fd;
+  background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
   padding: 1px 6px;
   border-radius: var(--radius-pill);
 }

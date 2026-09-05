@@ -106,6 +106,6 @@
 }
 
 .adhoc-form__actions button[type='submit']:disabled {
-  background: #9fb7de;
+  background: color-mix(in srgb, var(--color-accent) 45%, white);
   cursor: not-allowed;
 }
