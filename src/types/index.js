@@ -1,6 +1,6 @@
 // Shared JSDoc typedefs mirroring the backend's Pydantic models exactly
 // (src/api.py, src/investigation_agent.py, src/operational_insights.py,
-// src/ticketing.py in the backend repo). No runtime code — plain JS
+// src/ticketing.py in the backend repo). No runtime code - plain JS
 // project, these exist purely so every component can `@param`/`@type`
 // against one agreed shape instead of components re-describing the
 // contract ad hoc. Keep in sync with the backend if it changes; nothing

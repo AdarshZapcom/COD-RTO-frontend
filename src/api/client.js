@@ -1,5 +1,5 @@
 // Thin fetch wrapper over the FastAPI backend (task 05). No reshaping of
-// response data happens here — every function resolves to the JSON body
+// response data happens here - every function resolves to the JSON body
 // exactly as the backend sends it, matching the shapes in
 // docs/tasks/06-react-frontend.md / src/api.py & src/investigation_agent.py
 // in the backend repo. Components read fields directly off what these
@@ -26,7 +26,7 @@ function buildQuery(params) {
 /**
  * Formats a backend `detail` value into a readable string. Usually a
  * plain string, but FastAPI's default validation-error shape (most
- * 422s) is an array of `{ loc, msg, type }` objects — map that into a
+ * 422s) is an array of `{ loc, msg, type }` objects - map that into a
  * short "field: message" summary instead of showing the raw JSON blob.
  */
 function formatDetail(detail) {
@@ -64,7 +64,7 @@ async function request(path, options = {}) {
   try {
     body = await res.json();
   } catch {
-    // No JSON body (e.g. some 204/500s) — leave body as null.
+    // No JSON body (e.g. some 204/500s) - leave body as null.
   }
 
   if (!res.ok) {

@@ -8,7 +8,7 @@
   margin-bottom: 8px;
 }
 
-/* Static, class-selectable tag — colors come from the shared design
+/* Static, class-selectable tag - colors come from the shared design
    tokens in src/index.css, not hardcoded hex, per that file's note. */
 .narrative-panel__source--llm {
   background: var(--color-success-bg);

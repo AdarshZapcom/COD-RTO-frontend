@@ -34,7 +34,7 @@ function validate(form) {
   return errors;
 }
 
-/** Builds the AdHocOrderPayload. pincode is sent as the raw string entered —
+/** Builds the AdHocOrderPayload. pincode is sent as the raw string entered -
  * the backend coerces string|number, so no client-side coercion happens
  * here. order_id is left for the backend to generate (a synthetic
  * "ADHOC-<timestamp>" id) rather than collected here - see buildPayload's
@@ -49,10 +49,10 @@ function buildPayload(form) {
 }
 
 /**
- * GROUP 1 (pairs with OrderPicker) — owns this file + AdHocOrderForm.css only.
+ * GROUP 1 (pairs with OrderPicker) - owns this file + AdHocOrderForm.css only.
  *
  * Free-entry customer_id / pincode / courier_id / order_value (any of
- * which may not exist in the dataset) — the only four fields that
+ * which may not exist in the dataset) - the only four fields that
  * actually reach the decision. This used to also collect order_id,
  * seller_id, product_category, cod_amount, payment_type,
  * is_first_order and address_verified behind a collapsed "advanced"
@@ -60,15 +60,15 @@ function buildPayload(form) {
  * decide(), or even the LLM narrative prompt - confirmed by grepping
  * the backend, not assumed - so they were pure dead input and removed
  * rather than left to imply a capability that doesn't exist.
- * Submits via `onSubmit(payload)` — App owns the actual POST
+ * Submits via `onSubmit(payload)` - App owns the actual POST
  * /investigate call and resulting shared `currentInvestigation`, so
  * this component only collects the form, validates it client-side, and
  * hands off a plain payload object. Works identically for a brand-new
- * customer or one that already exists — no client-side lookup against
+ * customer or one that already exists - no client-side lookup against
  * the dataset, the backend decides that; the validation here is
  * format-only (required fields present, order_value numeric).
  *
- * The form is intentionally NOT cleared after a successful submit — an
+ * The form is intentionally NOT cleared after a successful submit - an
  * ad-hoc investigation is often re-run with one field tweaked to see
  * how the decision changes, and clearing would throw that away.
  * `submitting` (shared with App, since App also owns whatever the
@@ -126,7 +126,7 @@ export default function AdHocOrderForm({ onSubmit, submitting }) {
     <div className="panel adhoc-form">
       <h2>Ad-hoc order</h2>
       <p className="adhoc-form__hint">
-        Enter any customer / pincode / courier combination — new or existing — and submit to run a
+        Enter any customer / pincode / courier combination - new or existing - and submit to run a
         live investigation against it.
       </p>
 

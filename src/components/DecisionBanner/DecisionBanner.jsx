@@ -2,23 +2,23 @@ import { decisionColor, riskColor, formatPercent, splitUncertaintyFlags } from '
 import './DecisionBanner.css';
 
 /**
- * GROUP 4 — owns this file + DecisionBanner.css only.
+ * GROUP 4 - owns this file + DecisionBanner.css only.
  *
  * The one thing visible without scrolling: `decision` (color-coded via
  * the shared decisionColor() helper), `risk_level` (riskColor()),
  * `confidence`, `reason`, plus (when present) the named demo `scenario`
- * this order was built for, and — for any non-RELEASE call — a plain
+ * this order was built for, and - for any non-RELEASE call - a plain
  * signal that the order has been handed off to a human ops reviewer
  * (naming the escalation ticket when one was actually written).
  *
  * EXTENDED per the UX spec's resolution of a real tension: the task
  * doc wants a fabricated 4-dimension STALE/MISSING data-quality grid
- * that isn't in the wire contract (see EvidencePanel's note — that
+ * that isn't in the wire contract (see EvidencePanel's note - that
  * structured object was never in InvestigationReport and the backend's
  * real STALE-detection warnings are computed but dropped before the
  * API response), while a separate instruction wants data-quality
  * problems to be "the single most important visual element on the
- * page, not a minor badge" — in tension with this component being "the
+ * page, not a minor badge" - in tension with this component being "the
  * one thing visible without scrolling." Rather than fabricate numbers
  * or move data-quality out of this always-visible component, any
  * `uncertainty_flags` entry carrying the real "CRITICAL: " prefix (the
@@ -27,11 +27,11 @@ import './DecisionBanner.css';
  * solid-color alert bar rendered INSIDE this component, above the
  * decision line itself, so it can't be missed without scrolling. The
  * complete, undifferentiated flag list (critical + warning tier) stays
- * owned by EvidencePanel for anyone who scrolls further — this
+ * owned by EvidencePanel for anyone who scrolls further - this
  * component surfaces only the critical subset plus a count of any
  * remaining flags pointing there, it does not duplicate that detail.
  *
- * States handled (pure/props-driven — no fetch of its own, so no
+ * States handled (pure/props-driven - no fetch of its own, so no
  * network loading/error state applies; "as applicable" per the async
  * quality bar means the states that actually apply here):
  *  - no `investigation` prop at all -> renders nothing (defensive; the
@@ -43,7 +43,7 @@ import './DecisionBanner.css';
  *  - populated, one or more "CRITICAL: " flags -> full-width solid
  *    alert bar listing them, on top of the plain banner content
  *  - missing/null confidence, reason, risk_level, decision -> safe
- *    fallbacks ("—", "UNKNOWN", a default sentence), never renders
+ *    fallbacks ("-", "UNKNOWN", a default sentence), never renders
  *    "NaN%" or a bare "undefined"
  *
  * @param {{ investigation: import('../../types').InvestigationReport | null | undefined }} props
@@ -107,7 +107,7 @@ export default function DecisionBanner({ investigation }) {
       {decision && decision !== 'RELEASE' && (
         <p className="decision-banner__handoff">
           <span aria-hidden="true">→</span> Handed off to a human ops reviewer
-          {ticketId ? ` — ticket ${ticketId}` : ''}
+          {ticketId ? ` - ticket ${ticketId}` : ''}
         </p>
       )}
 
@@ -116,7 +116,7 @@ export default function DecisionBanner({ investigation }) {
           {warningCount === 1
             ? '1 additional data quality flag'
             : `${warningCount} additional data quality flags`}{' '}
-          — see Evidence quality below.
+          - see Evidence quality below.
         </p>
       )}
     </div>

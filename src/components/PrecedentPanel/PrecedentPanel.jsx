@@ -1,7 +1,7 @@
 import './PrecedentPanel.css';
 
 /**
- * GROUP 3 (pairs with NarrativePanel) — owns this file + PrecedentPanel.css only.
+ * GROUP 3 (pairs with NarrativePanel) - owns this file + PrecedentPanel.css only.
  *
  * Top-3 retrieved cases from `retrieved_case_ids` / `most_relevant_case_id`.
  *
@@ -9,7 +9,7 @@ import './PrecedentPanel.css';
  * around): the doc wants each retrieved case tagged with its lane
  * (SAME LANE / cross-lane), its past decision, and its actual outcome.
  * The verified InvestigationReport contract only returns
- * `retrieved_case_ids: string[]` + `most_relevant_case_id: string|null` —
+ * `retrieved_case_ids: string[]` + `most_relevant_case_id: string|null` -
  * there is no `GET /cases/{id}` in the backend to fetch lane/decision/
  * outcome for those IDs, and no such detail is embedded on the report
  * itself. Rendering that breakdown would mean fabricating it, so this
@@ -17,13 +17,13 @@ import './PrecedentPanel.css';
  * of retrieved case IDs, with the one matching `most_relevant_case_id`
  * visually distinguished. If lane/decision/outcome per case matters for
  * the demo, that's a backend contract addition to raise with the
- * architect — not something to invent client-side.
+ * architect - not something to invent client-side.
  *
  * States handled: empty (no cases retrieved), populated (list + most-
  * relevant highlight), and a defensive note if `most_relevant_case_id`
  * doesn't actually appear in `retrieved_case_ids` (a data inconsistency
  * worth surfacing rather than silently swallowing). No loading/error
- * state belongs to this component — it never fetches anything itself;
+ * state belongs to this component - it never fetches anything itself;
  * App.jsx only mounts it once `currentInvestigation` is already a
  * populated InvestigationReport, so a missing/null `investigation` prop
  * is not a real runtime case here (still guarded below, defensively).
