@@ -124,7 +124,7 @@ export default function AdHocOrderForm({ onSubmit, submitting }) {
 
   return (
     <div className="panel adhoc-form">
-      <h2>Manual order check</h2>
+      <h2>Order check</h2>
       <p className="adhoc-form__hint">
         Enter any customer / pincode / courier combination - new or existing - and submit to run a
         live investigation against it.
