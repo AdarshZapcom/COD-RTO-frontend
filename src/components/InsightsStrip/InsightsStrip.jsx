@@ -136,7 +136,7 @@ export default function InsightsStrip() {
                 </div>
 
                 <p className="insights-strip__sample">
-                  n={insight.sample_size}
+                  Based on {insight.sample_size} past order{insight.sample_size === 1 ? '' : 's'}
                   {isLowSample && ' - too small to trust the rate above'}
                 </p>
 
