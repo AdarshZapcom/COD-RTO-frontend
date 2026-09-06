@@ -23,13 +23,6 @@
  * @property {string|number} pincode
  * @property {string} courier_id
  * @property {number} order_value
- * @property {string} [order_id]
- * @property {string} [seller_id]
- * @property {string} [product_category]
- * @property {number} [cod_amount]
- * @property {string} [payment_type]
- * @property {boolean} [is_first_order]
- * @property {boolean} [address_verified]
  */
 
 /**
