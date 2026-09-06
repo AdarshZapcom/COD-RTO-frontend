@@ -1,11 +1,11 @@
 import './EvidenceComparison.css';
 
 /**
- * GROUP 2 (pairs with EvidencePanel) — owns this file + EvidenceComparison.css only.
+ * GROUP 2 (pairs with EvidencePanel) - owns this file + EvidenceComparison.css only.
  *
  * Two columns, Supporting vs. Counter-evidence. The spec describes this
  * as coming from `signal_comparison.supporting_evidence` /
- * `counter_evidence` — the verified contract has no nested
+ * `counter_evidence` - the verified contract has no nested
  * `signal_comparison` object, these are top-level fields on the
  * InvestigationReport itself (`investigation.supporting_evidence`,
  * `investigation.counter_evidence`), each a flat string[] of evidence

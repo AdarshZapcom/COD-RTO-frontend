@@ -4,13 +4,13 @@ import { decisionColor, riskColor, splitUncertaintyFlags } from '../../lib/forma
 import './TicketsView.css';
 
 /** Raw ticket rows join these as " | "-strings, not arrays like
- * InvestigationReport's fields of the same name — split before use. */
+ * InvestigationReport's fields of the same name - split before use. */
 function splitJoined(value) {
   return value ? value.split(' | ').filter(Boolean) : [];
 }
 
 function formatTimestamp(value) {
-  if (!value) return '—';
+  if (!value) return '-';
   const parsed = new Date(value);
   return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
 }
@@ -18,16 +18,16 @@ function formatTimestamp(value) {
 const EMPTY_RESOLVE_FORM = { resolvedBy: '', resolutionNote: '' };
 
 /**
- * GROUP 5 (pairs with InsightsStrip) — owns this file + TicketsView.css only.
+ * GROUP 5 (pairs with InsightsStrip) - owns this file + TicketsView.css only.
  *
  * GET /tickets?status=OPEN, with a resolve action (POST
- * /tickets/{id}/resolve). Fully self-contained — fetches its own data
+ * /tickets/{id}/resolve). Fully self-contained - fetches its own data
  * on mount (and on manual refresh), independent of `currentInvestigation`
  * and every other component.
  *
  * Resolving is destructive (closes the escalation) and the backend
  * requires a real `resolved_by` / `resolution_note`, so "Resolve" does
- * not call the API directly — it reveals an inline confirm form
+ * not call the API directly - it reveals an inline confirm form
  * (required resolved-by + resolution-note fields) scoped to that one
  * ticket; only submitting that form calls resolveTicket(). A native
  * `confirm()` popup would be unstyled/blocking and a full modal is more
@@ -48,7 +48,7 @@ export default function TicketsView() {
   const [resolvingId, setResolvingId] = useState(null);
   const [resolveErrors, setResolveErrors] = useState({});
   // Transient screen-reader-only announcement (e.g. "Ticket TCK-X
-  // resolved.") — the row itself just disappears visually, so this is
+  // resolved.") - the row itself just disappears visually, so this is
   // the only signal a screen-reader user gets that the action landed.
   const [announcement, setAnnouncement] = useState('');
 
@@ -156,20 +156,20 @@ export default function TicketsView() {
       // Fires regardless of which ticket's form is currently active.
       setAnnouncement(`Ticket ${ticketId} resolved.`);
       // Only clear the shared active-ticket/form state if it still belongs
-      // to this ticket — the operator may have already moved on to a
+      // to this ticket - the operator may have already moved on to a
       // different ticket's resolve form while this request was in flight,
       // and that form must not be silently closed or wiped out from under
       // them.
       if (activeTicketIdRef.current === ticketId) {
         // The row (and its Resolve button) is about to be removed from
-        // the list entirely, so there's no button to return focus to —
+        // the list entirely, so there's no button to return focus to -
         // send it to the panel heading instead of letting it fall
         // through to the document body.
         pendingFocusRef.current = { type: 'heading' };
         setActiveTicketId(null);
         setResolveForm(EMPTY_RESOLVE_FORM);
       }
-      // Resolved tickets are no longer OPEN — drop it locally instead of
+      // Resolved tickets are no longer OPEN - drop it locally instead of
       // a full round-trip re-fetch.
       setTickets((prev) => prev.filter((t) => t.ticket_id !== ticketId));
     } catch (err) {
@@ -216,7 +216,7 @@ export default function TicketsView() {
         )}
 
         {!listLoading && !listError && tickets.length === 0 && (
-          <p className="empty-state">No open tickets — all clear.</p>
+          <p className="empty-state">No open tickets - all clear.</p>
         )}
       </div>
 
@@ -227,7 +227,7 @@ export default function TicketsView() {
             const isResolving = resolvingId === ticket.ticket_id;
             const rowError = resolveErrors[ticket.ticket_id];
             const confidencePct =
-              typeof ticket.confidence === 'number' ? `${(ticket.confidence * 100).toFixed(0)}%` : '—';
+              typeof ticket.confidence === 'number' ? `${(ticket.confidence * 100).toFixed(0)}%` : '-';
 
             const supportingEvidence = splitJoined(ticket.supporting_evidence);
             const counterEvidence = splitJoined(ticket.counter_evidence);
@@ -289,7 +289,7 @@ export default function TicketsView() {
                     }}
                   >
                     <p className="tickets-view__resolve-hint">
-                      Confirm resolution for {ticket.ticket_id} — both fields are required.
+                      Confirm resolution for {ticket.ticket_id} - both fields are required.
                     </p>
 
                     <label htmlFor={`resolved-by-${ticket.ticket_id}`}>Resolved by</label>

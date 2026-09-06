@@ -3,7 +3,7 @@ import { getInsights } from '../../api/client';
 import { severityColor, formatPercent } from '../../lib/format.js';
 import './InsightsStrip.css';
 
-/** Severity is not a plain "how bad" scale — LOW_SAMPLE means the rate
+/** Severity is not a plain "how bad" scale - LOW_SAMPLE means the rate
  * itself can't be trusted (too few orders), not "safer than MEDIUM". */
 const SEVERITY_LABEL = {
   HIGH: 'High risk',
@@ -13,11 +13,11 @@ const SEVERITY_LABEL = {
 const SEVERITY_RANK = { HIGH: 0, MEDIUM: 1, LOW_SAMPLE: 2 };
 
 /**
- * GROUP 5 (pairs with TicketsView) — owns this file + InsightsStrip.css only.
+ * GROUP 5 (pairs with TicketsView) - owns this file + InsightsStrip.css only.
  *
  * GET /insights: courier×pincode routes whose RTO rate has moved enough,
  * or lacks enough sample, to be worth an operator's attention. Fully
- * self-contained — fetches its own data on mount (and on manual
+ * self-contained - fetches its own data on mount (and on manual
  * refresh), independent of `currentInvestigation` and every other
  * component; severity is color-coded via the shared `severityColor()`
  * helper from src/lib/format.js so it stays consistent with every other
@@ -137,7 +137,7 @@ export default function InsightsStrip() {
 
                 <p className="insights-strip__sample">
                   n={insight.sample_size}
-                  {isLowSample && ' — too small to trust the rate above'}
+                  {isLowSample && ' - too small to trust the rate above'}
                 </p>
 
                 {insight.possible_cause && (

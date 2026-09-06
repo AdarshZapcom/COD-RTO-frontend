@@ -6,31 +6,7 @@ const EMPTY_FORM = {
   pincode: '',
   courier_id: '',
   order_value: '',
-  order_id: '',
-  seller_id: '',
-  product_category: '',
-  cod_amount: '',
-  payment_type: '',
-  is_first_order: '',
-  address_verified: '',
 };
-
-// Real category values confirmed in the backend's synthetic data generator
-// (src/data_generator.py PRODUCT_CATEGORIES) — offered as <datalist>
-// suggestions, not a locked <select>, since product_category is an open
-// Optional[str] on the wire and any value should still be sendable.
-const PRODUCT_CATEGORIES = [
-  'Electronics',
-  'Fashion',
-  'Beauty',
-  'Home',
-  'Kitchen',
-  'Mobile_Accessories',
-  'Footwear',
-  'Grocery',
-  'Sports',
-  'Personal_Care',
-];
 
 // Order the four *required* fields visually appear in, used to focus the
 // first invalid one on a failed submit.
@@ -55,58 +31,50 @@ function validate(form) {
     errors.order_value = 'Order value must be a number greater than 0.';
   }
 
-  if (
-    form.cod_amount.trim() !== '' &&
-    (!Number.isFinite(Number(form.cod_amount)) || Number(form.cod_amount) < 0)
-  ) {
-    errors.cod_amount = 'COD amount must be a non-negative number.';
-  }
-
   return errors;
 }
 
-/** Builds the AdHocOrderPayload, omitting optional fields left blank so the
- * backend sees them as genuinely absent rather than empty strings. pincode
- * is sent as the raw string entered — the backend coerces string|number,
- * so no client-side coercion happens here. */
+/** Builds the AdHocOrderPayload. pincode is sent as the raw string entered -
+ * the backend coerces string|number, so no client-side coercion happens
+ * here. order_id is left for the backend to generate (a synthetic
+ * "ADHOC-<timestamp>" id) rather than collected here - see buildPayload's
+ * removed advanced-fields note below for why the rest were dropped. */
 function buildPayload(form) {
-  const payload = {
+  return {
     customer_id: form.customer_id.trim(),
     pincode: form.pincode.trim(),
     courier_id: form.courier_id.trim(),
     order_value: Number(form.order_value),
   };
-  if (form.order_id.trim()) payload.order_id = form.order_id.trim();
-  if (form.seller_id.trim()) payload.seller_id = form.seller_id.trim();
-  if (form.product_category.trim()) payload.product_category = form.product_category.trim();
-  if (form.cod_amount.trim() !== '') payload.cod_amount = Number(form.cod_amount);
-  if (form.payment_type.trim()) payload.payment_type = form.payment_type.trim();
-  if (form.is_first_order !== '') payload.is_first_order = form.is_first_order === 'true';
-  if (form.address_verified !== '') payload.address_verified = form.address_verified === 'true';
-  return payload;
 }
 
 /**
- * GROUP 1 (pairs with OrderPicker) — owns this file + AdHocOrderForm.css only.
+ * GROUP 1 (pairs with OrderPicker) - owns this file + AdHocOrderForm.css only.
  *
  * Free-entry customer_id / pincode / courier_id / order_value (any of
- * which may not exist in the dataset), plus a collapsed "advanced" section
- * for the remaining optional AdHocOrderPayload fields. Submits via
- * `onSubmit(payload)` — App owns the actual POST /investigate call and
- * resulting shared `currentInvestigation`, so this component only
- * collects the form, validates it client-side, and hands off a plain
- * payload object. Works identically for a brand-new customer or one that
- * already exists — no client-side lookup against the dataset, the
- * backend decides that; the validation here is format-only (required
- * fields present, order_value/cod_amount numeric).
+ * which may not exist in the dataset) - the only four fields that
+ * actually reach the decision. This used to also collect order_id,
+ * seller_id, product_category, cod_amount, payment_type,
+ * is_first_order and address_verified behind a collapsed "advanced"
+ * section, but none of them were ever read by compare_signals(),
+ * decide(), or even the LLM narrative prompt - confirmed by grepping
+ * the backend, not assumed - so they were pure dead input and removed
+ * rather than left to imply a capability that doesn't exist.
+ * Submits via `onSubmit(payload)` - App owns the actual POST
+ * /investigate call and resulting shared `currentInvestigation`, so
+ * this component only collects the form, validates it client-side, and
+ * hands off a plain payload object. Works identically for a brand-new
+ * customer or one that already exists - no client-side lookup against
+ * the dataset, the backend decides that; the validation here is
+ * format-only (required fields present, order_value numeric).
  *
- * The form is intentionally NOT cleared after a successful submit — an
- * ad-hoc investigation is often re-run with one field tweaked (e.g.
- * toggling address_verified) to see how the decision changes, and
- * clearing would throw that away. `submitting` (shared with App, since
- * App also owns whatever the submission produces) disables every field
- * and the submit button and relabels it, which is the only feedback this
- * isolated component can give about an in-flight submission.
+ * The form is intentionally NOT cleared after a successful submit - an
+ * ad-hoc investigation is often re-run with one field tweaked to see
+ * how the decision changes, and clearing would throw that away.
+ * `submitting` (shared with App, since App also owns whatever the
+ * submission produces) disables every field and the submit button and
+ * relabels it, which is the only feedback this isolated component can
+ * give about an in-flight submission.
  *
  * @param {{ onSubmit: (payload: import('../../types').AdHocOrderPayload) => void, submitting: boolean }} props
  */
@@ -146,7 +114,7 @@ export default function AdHocOrderForm({ onSubmit, submitting }) {
     setErrors(nextErrors);
 
     if (Object.keys(nextErrors).length > 0) {
-      const firstInvalid = REQUIRED_FIELD_ORDER.find((field) => nextErrors[field]) || 'cod_amount';
+      const firstInvalid = REQUIRED_FIELD_ORDER.find((field) => nextErrors[field]);
       fieldRefs.current[firstInvalid]?.focus();
       return;
     }
@@ -158,7 +126,7 @@ export default function AdHocOrderForm({ onSubmit, submitting }) {
     <div className="panel adhoc-form">
       <h2>Ad-hoc order</h2>
       <p className="adhoc-form__hint">
-        Enter any customer / pincode / courier combination — new or existing — and submit to run a
+        Enter any customer / pincode / courier combination - new or existing - and submit to run a
         live investigation against it.
       </p>
 
@@ -252,112 +220,6 @@ export default function AdHocOrderForm({ onSubmit, submitting }) {
             )}
           </div>
         </div>
-
-        <details className="adhoc-form__advanced">
-          <summary>Advanced fields (optional)</summary>
-          <div className="adhoc-form__grid">
-            <div className="adhoc-form__field">
-              <label htmlFor={fieldId('order_id')}>Order ID</label>
-              <input
-                id={fieldId('order_id')}
-                value={form.order_id}
-                onChange={handleChange('order_id')}
-                disabled={submitting}
-              />
-            </div>
-
-            <div className="adhoc-form__field">
-              <label htmlFor={fieldId('seller_id')}>Seller ID</label>
-              <input
-                id={fieldId('seller_id')}
-                value={form.seller_id}
-                onChange={handleChange('seller_id')}
-                disabled={submitting}
-              />
-            </div>
-
-            <div className="adhoc-form__field">
-              <label htmlFor={fieldId('product_category')}>Product category</label>
-              <input
-                id={fieldId('product_category')}
-                list={fieldId('product_category_options')}
-                value={form.product_category}
-                onChange={handleChange('product_category')}
-                disabled={submitting}
-              />
-              <datalist id={fieldId('product_category_options')}>
-                {PRODUCT_CATEGORIES.map((category) => (
-                  <option key={category} value={category} />
-                ))}
-              </datalist>
-            </div>
-
-            <div className="adhoc-form__field">
-              <label htmlFor={fieldId('cod_amount')}>COD amount</label>
-              <input
-                id={fieldId('cod_amount')}
-                ref={(el) => {
-                  fieldRefs.current.cod_amount = el;
-                }}
-                type="number"
-                min="0"
-                step="0.01"
-                value={form.cod_amount}
-                onChange={handleChange('cod_amount')}
-                aria-invalid={Boolean(errors.cod_amount)}
-                aria-describedby={errors.cod_amount ? `${fieldId('cod_amount')}-error` : undefined}
-                disabled={submitting}
-              />
-              {errors.cod_amount && (
-                <p className="adhoc-form__error" id={`${fieldId('cod_amount')}-error`} role="alert">
-                  {errors.cod_amount}
-                </p>
-              )}
-            </div>
-
-            <div className="adhoc-form__field">
-              <label htmlFor={fieldId('payment_type')}>Payment type</label>
-              <input
-                id={fieldId('payment_type')}
-                list={fieldId('payment_type_options')}
-                value={form.payment_type}
-                onChange={handleChange('payment_type')}
-                disabled={submitting}
-              />
-              <datalist id={fieldId('payment_type_options')}>
-                <option value="COD" />
-              </datalist>
-            </div>
-
-            <div className="adhoc-form__field">
-              <label htmlFor={fieldId('is_first_order')}>First order?</label>
-              <select
-                id={fieldId('is_first_order')}
-                value={form.is_first_order}
-                onChange={handleChange('is_first_order')}
-                disabled={submitting}
-              >
-                <option value="">Unspecified</option>
-                <option value="true">Yes</option>
-                <option value="false">No</option>
-              </select>
-            </div>
-
-            <div className="adhoc-form__field">
-              <label htmlFor={fieldId('address_verified')}>Address verified?</label>
-              <select
-                id={fieldId('address_verified')}
-                value={form.address_verified}
-                onChange={handleChange('address_verified')}
-                disabled={submitting}
-              >
-                <option value="">Unspecified</option>
-                <option value="true">Yes</option>
-                <option value="false">No</option>
-              </select>
-            </div>
-          </div>
-        </details>
 
         <div className="adhoc-form__actions">
           <button type="button" className="adhoc-form__reset" onClick={handleReset} disabled={submitting}>

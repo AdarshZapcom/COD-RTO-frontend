@@ -39,7 +39,7 @@ export default function InvestigationTabs({ investigation }) {
 
   // Roving-tabindex arrow nav: only the active tab is Tab-reachable
   // (tabIndex 0), so moving the "selected" tab via arrow keys must also
-  // move actual DOM focus there — changing tabIndex alone does not pull
+  // move actual DOM focus there - changing tabIndex alone does not pull
   // focus off the previously-focused button.
   function focusTab(key) {
     setActiveTab(key);

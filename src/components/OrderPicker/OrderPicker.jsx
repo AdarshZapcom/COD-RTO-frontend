@@ -9,7 +9,7 @@ import './OrderPicker.css';
 const PAGE_SIZE = 50;
 
 // Real scenario values confirmed in the backend's synthetic data generator
-// (src/data_generator.py `special_scenarios` / `scenario` assignments) —
+// (src/data_generator.py `special_scenarios` / `scenario` assignments) -
 // not guessed. "" means "no scenario filter" (all orders, GET /orders with
 // no `scenario` param) rather than a scenario value of its own. Labels come
 // from the shared formatScenario() map in lib/format.js (single source of
@@ -34,13 +34,13 @@ const SCENARIOS = [
 ];
 
 /**
- * GROUP 1 (pairs with AdHocOrderForm) — owns this file + OrderPicker.css only.
+ * GROUP 1 (pairs with AdHocOrderForm) - owns this file + OrderPicker.css only.
  *
  * Searchable/filterable list from GET /orders (filter by `scenario` for
  * rehearsal, paginated via `limit`/`offset`). Each row: order_id,
  * customer_id, pincode, courier_id, order_value (+ scenario badge when it's
  * not the default "NORMAL"). Selecting a row calls `onSelectOrder(order_id)`
- * — App owns the actual GET /orders/{id}/investigate call and the
+ * - App owns the actual GET /orders/{id}/investigate call and the
  * resulting shared `currentInvestigation`; this component only
  * fetches/renders the list and reports which row was picked.
  *
@@ -62,7 +62,7 @@ export default function OrderPicker({ onSelectOrder, selectedOrderId }) {
 
   // Guards against out-of-order responses: e.g. the user flips the
   // scenario filter twice quickly and the first request's response lands
-  // after the second's — without this it would clobber the newer result.
+  // after the second's - without this it would clobber the newer result.
   //
   // Replace (page-0) fetches and append ("Load more") fetches get their own
   // id counters rather than sharing one. If they shared one, a "Load more"
@@ -70,7 +70,7 @@ export default function OrderPicker({ onSelectOrder, selectedOrderId }) {
   // loadingMore flag: the new (replace) fetch's finally block resets
   // `loading`, not `loadingMore`, and the stale append fetch's own finally
   // is gated on the shared counter, which the replace fetch has already
-  // moved past — so it silently no-ops and loadingMore is stuck true.
+  // moved past - so it silently no-ops and loadingMore is stuck true.
   const replaceRequestIdRef = useRef(0);
   const appendRequestIdRef = useRef(0);
 
@@ -177,7 +177,7 @@ export default function OrderPicker({ onSelectOrder, selectedOrderId }) {
                   >
                     <span className="order-picker__id">{order.order_id}</span>
                     <span className="order-picker__meta">
-                      {order.customer_id ?? '—'} · {order.pincode ?? '—'} · {order.courier_id ?? '—'}
+                      {order.customer_id ?? '-'} · {order.pincode ?? '-'} · {order.courier_id ?? '-'}
                       {hasValue ? ` · ₹${order.order_value.toLocaleString()}` : ''}
                     </span>
                     {order.scenario && order.scenario !== 'NORMAL' && (
