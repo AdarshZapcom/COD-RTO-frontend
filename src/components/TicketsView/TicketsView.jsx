@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { getTickets, resolveTicket } from '../../api/client';
-import { decisionColor, riskColor, splitUncertaintyFlags } from '../../lib/format.js';
+import { decisionColor, riskColor, formatDecision, splitUncertaintyFlags } from '../../lib/format.js';
 import './TicketsView.css';
 
 /** Raw ticket rows join these as " | "-strings, not arrays like
@@ -241,7 +241,7 @@ export default function TicketsView() {
                     <span className="tickets-view__id">{ticket.ticket_id}</span>
                     <span className="tickets-view__order">Order {ticket.order_id}</span>
                     <span className="tickets-view__decision" style={{ color: decisionColor(ticket.decision) }}>
-                      {ticket.decision}
+                      {formatDecision(ticket.decision)}
                     </span>
                     <span className="tickets-view__risk" style={{ color: riskColor(ticket.risk_level) }}>
                       {ticket.risk_level} risk

@@ -76,13 +76,25 @@ const SCENARIO_LABELS = {
   TEMPORARY_DISRUPTION: 'Temporary disruption',
 };
 
+// Shared fallback for any SCREAMING_SNAKE_CASE backend constant that
+// doesn't have a curated label below: "SOME_CONSTANT" -> "Some constant".
+// No raw enum-like value should ever reach the screen with its
+// underscores intact - it reads as an unfinished template, not a
+// considered piece of UI copy.
+function titleCaseFromConstant(value) {
+  return value
+    .toLowerCase()
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
 /**
  * Human-readable label for a raw backend scenario constant, e.g.
  * "GOOD_CUSTOMER_BAD_PINCODE" -> "Good customer, bad pincode". Falls
- * back to a generic underscore/Title Case conversion for any value not
- * in the curated list above, so a badge never reverts to showing a raw
- * SCREAMING_SNAKE_CASE constant if the backend adds a scenario before
- * this list is updated.
+ * back to titleCaseFromConstant() for any value not in the curated list
+ * above, so a badge never reverts to showing a raw SCREAMING_SNAKE_CASE
+ * constant if the backend adds a scenario before this list is updated.
  *
  * @param {string|null|undefined} scenario
  * @returns {string}
@@ -90,11 +102,29 @@ const SCENARIO_LABELS = {
 export function formatScenario(scenario) {
   if (!scenario || typeof scenario !== 'string') return '';
   if (SCENARIO_LABELS[scenario]) return SCENARIO_LABELS[scenario];
-  return scenario
-    .toLowerCase()
-    .split('_')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+  return titleCaseFromConstant(scenario);
+}
+
+// Same idea as SCENARIO_LABELS, for the backend's decision constant
+// (RELEASE / HOLD_FOR_VERIFICATION / ESCALATE) - the raw value is only
+// ever used internally (decisionColor()'s lookup key), never displayed.
+const DECISION_LABELS = {
+  RELEASE: 'Release',
+  HOLD_FOR_VERIFICATION: 'Hold for verification',
+  ESCALATE: 'Escalate',
+};
+
+/**
+ * Human-readable label for a raw backend decision constant, e.g.
+ * "HOLD_FOR_VERIFICATION" -> "Hold for verification".
+ *
+ * @param {string|null|undefined} decision
+ * @returns {string}
+ */
+export function formatDecision(decision) {
+  if (!decision || typeof decision !== 'string') return '';
+  if (DECISION_LABELS[decision]) return DECISION_LABELS[decision];
+  return titleCaseFromConstant(decision);
 }
 
 // What each scenario was deliberately constructed to test (docs/research.md

@@ -3,6 +3,7 @@ import {
   riskColor,
   formatPercent,
   formatScenario,
+  formatDecision,
   describeScenario,
   splitUncertaintyFlags,
 } from '../../lib/format.js';
@@ -99,7 +100,7 @@ export default function DecisionBanner({ investigation }) {
 
       <div className="decision-banner__top">
         <span className="decision-banner__decision" style={{ color: decisionColor(decision) }}>
-          {decision || 'UNKNOWN'}
+          {decision ? formatDecision(decision) : 'Unknown'}
         </span>
         <span className="decision-banner__risk" style={{ color: riskColor(riskLevel) }}>
           Risk: {riskLevel || 'UNKNOWN'}
