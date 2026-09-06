@@ -73,9 +73,31 @@
   color: var(--color-text-muted);
 }
 
+.decision-banner__scenario {
+  font-size: 0.66rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
+  padding: 1px 6px;
+  border-radius: var(--radius-pill);
+}
+
 .decision-banner__reason {
   margin: 8px 0 0;
   font-size: 0.95rem;
+}
+
+.decision-banner__handoff {
+  margin: 10px 0 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.decision-banner__handoff span {
+  color: var(--color-accent);
 }
 
 .decision-banner__warning-note {

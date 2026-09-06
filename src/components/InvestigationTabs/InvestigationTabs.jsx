@@ -14,9 +14,9 @@ const TABS = [
  * Replaces the old always-stacked EvidencePanel/EvidenceComparison/
  * PrecedentPanel/NarrativePanel column with 2 tabs, so only one pair is
  * on screen at a time. DecisionBanner stays a sibling above this
- * component in App.jsx, never inside a tab. (A third "Timing" tab
- * backed by TimingFooter existed here previously; removed as an
- * internal-debugging detail with no place in the demo UI.)
+ * component in App.jsx, never inside a tab. (A third "Timing" tab was
+ * removed per team review - pipeline latency is an internal-debugging
+ * detail, not part of the investigation a reviewer needs to see.)
  *
  * @param {{ investigation: import('../../types').InvestigationReport }} props
  */
