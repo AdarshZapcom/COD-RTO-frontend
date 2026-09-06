@@ -2,7 +2,7 @@ import { decisionColor, riskColor, formatPercent, splitUncertaintyFlags } from '
 import './DecisionBanner.css';
 
 /**
- * GROUP 4 (pairs with TimingFooter) — owns this file + DecisionBanner.css only.
+ * GROUP 4 — owns this file + DecisionBanner.css only.
  *
  * The one thing visible without scrolling: `decision` (color-coded via
  * the shared decisionColor() helper), `risk_level` (riskColor()),

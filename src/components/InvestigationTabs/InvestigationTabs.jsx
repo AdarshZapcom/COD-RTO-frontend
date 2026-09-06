@@ -3,20 +3,20 @@ import EvidencePanel from '../EvidencePanel/EvidencePanel.jsx';
 import EvidenceComparison from '../EvidenceComparison/EvidenceComparison.jsx';
 import PrecedentPanel from '../PrecedentPanel/PrecedentPanel.jsx';
 import NarrativePanel from '../NarrativePanel/NarrativePanel.jsx';
-import TimingFooter from '../TimingFooter/TimingFooter.jsx';
 import './InvestigationTabs.css';
 
 const TABS = [
   { key: 'evidence', label: 'Evidence' },
   { key: 'precedent', label: 'Precedent & narrative' },
-  { key: 'timing', label: 'Timing' },
 ];
 
 /**
  * Replaces the old always-stacked EvidencePanel/EvidenceComparison/
- * PrecedentPanel/NarrativePanel/TimingFooter column with 3 tabs, so only
- * one pair is on screen at a time. DecisionBanner stays a sibling above
- * this component in App.jsx, never inside a tab.
+ * PrecedentPanel/NarrativePanel column with 2 tabs, so only one pair is
+ * on screen at a time. DecisionBanner stays a sibling above this
+ * component in App.jsx, never inside a tab. (A third "Timing" tab
+ * backed by TimingFooter existed here previously; removed as an
+ * internal-debugging detail with no place in the demo UI.)
  *
  * @param {{ investigation: import('../../types').InvestigationReport }} props
  */
@@ -113,17 +113,6 @@ export default function InvestigationTabs({ investigation }) {
           <PrecedentPanel investigation={investigation} />
           <NarrativePanel investigation={investigation} />
         </div>
-      </div>
-
-      <div
-        id={panelId('timing')}
-        role="tabpanel"
-        aria-labelledby={tabId('timing')}
-        hidden={activeTab !== 'timing'}
-        tabIndex={0}
-        className="investigation-tabs__panel"
-      >
-        <TimingFooter investigation={investigation} />
       </div>
     </div>
   );
