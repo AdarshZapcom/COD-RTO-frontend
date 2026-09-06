@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getOrders } from '../../api/client';
+import { formatScenario, describeScenario } from '../../lib/format.js';
 import './OrderPicker.css';
 
 // PAGE_SIZE mirrors the backend's own default (`limit: int = Query(50, ...)`
@@ -10,20 +11,26 @@ const PAGE_SIZE = 50;
 // Real scenario values confirmed in the backend's synthetic data generator
 // (src/data_generator.py `special_scenarios` / `scenario` assignments) —
 // not guessed. "" means "no scenario filter" (all orders, GET /orders with
-// no `scenario` param) rather than a scenario value of its own.
+// no `scenario` param) rather than a scenario value of its own. Labels come
+// from the shared formatScenario() map in lib/format.js (single source of
+// truth with the per-row badge and DecisionBanner's scenario tag).
+const SCENARIO_VALUES = [
+  'NORMAL',
+  'CLEAR_SAFE',
+  'CLEAR_RISKY',
+  'GOOD_CUSTOMER_BAD_PINCODE',
+  'COURIER_PINCODE_ANOMALY',
+  'NEW_EVERYTHING',
+  'MISSING_COURIER_DATA',
+  'CONFLICTING_SIGNALS',
+  'LOW_SAMPLE_SPIKE',
+  'NO_HISTORICAL_PRECEDENT',
+  'TEMPORARY_DISRUPTION',
+];
+
 const SCENARIOS = [
   { value: '', label: 'All scenarios' },
-  { value: 'NORMAL', label: 'Normal' },
-  { value: 'CLEAR_SAFE', label: 'Clear safe' },
-  { value: 'CLEAR_RISKY', label: 'Clear risky' },
-  { value: 'GOOD_CUSTOMER_BAD_PINCODE', label: 'Good customer, bad pincode' },
-  { value: 'COURIER_PINCODE_ANOMALY', label: 'Courier x pincode anomaly' },
-  { value: 'NEW_EVERYTHING', label: 'New everything' },
-  { value: 'MISSING_COURIER_DATA', label: 'Missing courier data' },
-  { value: 'CONFLICTING_SIGNALS', label: 'Conflicting signals' },
-  { value: 'LOW_SAMPLE_SPIKE', label: 'Low sample spike' },
-  { value: 'NO_HISTORICAL_PRECEDENT', label: 'No historical precedent' },
-  { value: 'TEMPORARY_DISRUPTION', label: 'Temporary disruption' },
+  ...SCENARIO_VALUES.map((value) => ({ value, label: formatScenario(value) })),
 ];
 
 /**
@@ -174,7 +181,12 @@ export default function OrderPicker({ onSelectOrder, selectedOrderId }) {
                       {hasValue ? ` · ₹${order.order_value.toLocaleString()}` : ''}
                     </span>
                     {order.scenario && order.scenario !== 'NORMAL' && (
-                      <span className="order-picker__scenario">{order.scenario}</span>
+                      <span
+                        className="order-picker__scenario"
+                        title={describeScenario(order.scenario) || undefined}
+                      >
+                        {formatScenario(order.scenario)}
+                      </span>
                     )}
                   </button>
                 </li>
