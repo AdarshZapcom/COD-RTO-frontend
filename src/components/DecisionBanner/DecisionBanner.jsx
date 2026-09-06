@@ -1,4 +1,11 @@
-import { decisionColor, riskColor, formatPercent, splitUncertaintyFlags } from '../../lib/format.js';
+import {
+  decisionColor,
+  riskColor,
+  formatPercent,
+  formatScenario,
+  describeScenario,
+  splitUncertaintyFlags,
+} from '../../lib/format.js';
 import './DecisionBanner.css';
 
 /**
@@ -7,7 +14,7 @@ import './DecisionBanner.css';
  * The one thing visible without scrolling: `decision` (color-coded via
  * the shared decisionColor() helper), `risk_level` (riskColor()),
  * `confidence`, `reason`, plus (when present) the named demo `scenario`
- * this order was built for, and - for any non-RELEASE call - a plain
+ * this order was built for, and — for any non-RELEASE call — a plain
  * signal that the order has been handed off to a human ops reviewer
  * (naming the escalation ticket when one was actually written).
  *
@@ -63,6 +70,7 @@ export default function DecisionBanner({ investigation }) {
 
   const { critical: criticalFlags, warning: warningFlags } = splitUncertaintyFlags(uncertaintyFlags);
   const warningCount = warningFlags.length;
+  const scenarioDescription = describeScenario(scenario);
 
   return (
     <div
@@ -98,11 +106,18 @@ export default function DecisionBanner({ investigation }) {
         </span>
         <span className="decision-banner__confidence">Confidence: {formatPercent(confidence)}</span>
         {scenario && scenario !== 'NORMAL' && (
-          <span className="decision-banner__scenario">{scenario}</span>
+          <span className="decision-banner__scenario">{formatScenario(scenario)}</span>
         )}
       </div>
 
       <p className="decision-banner__reason">{reason || 'No reason provided.'}</p>
+
+      {scenarioDescription && (
+        <p className="decision-banner__scenario-explainer">
+          <span className="decision-banner__scenario-explainer-label">Why this test case:</span>{' '}
+          {scenarioDescription}
+        </p>
+      )}
 
       {decision && decision !== 'RELEASE' && (
         <p className="decision-banner__handoff">

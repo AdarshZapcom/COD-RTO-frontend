@@ -89,6 +89,19 @@
   font-size: 0.95rem;
 }
 
+.decision-banner__scenario-explainer {
+  margin: 6px 0 0;
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--color-text-muted);
+}
+
+.decision-banner__scenario-explainer-label {
+  font-style: normal;
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
 .decision-banner__handoff {
   margin: 10px 0 0;
   font-size: 0.85rem;
