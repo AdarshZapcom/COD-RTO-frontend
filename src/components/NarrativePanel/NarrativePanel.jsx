@@ -1,7 +1,7 @@
 import './NarrativePanel.css';
 
 const SOURCE_LABELS = {
-  llm: 'LLM-GENERATED',
+  llm: 'AI SUMMARY',
   template_fallback: 'TEMPLATE FALLBACK',
 };
 

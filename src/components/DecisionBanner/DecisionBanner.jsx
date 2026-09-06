@@ -2,11 +2,14 @@ import { decisionColor, riskColor, formatPercent, splitUncertaintyFlags } from '
 import './DecisionBanner.css';
 
 /**
- * GROUP 4 (pairs with TimingFooter) — owns this file + DecisionBanner.css only.
+ * GROUP 4 — owns this file + DecisionBanner.css only.
  *
  * The one thing visible without scrolling: `decision` (color-coded via
  * the shared decisionColor() helper), `risk_level` (riskColor()),
- * `confidence`, `reason`.
+ * `confidence`, `reason`, plus (when present) the named demo `scenario`
+ * this order was built for, and — for any non-RELEASE call — a plain
+ * signal that the order has been handed off to a human ops reviewer
+ * (naming the escalation ticket when one was actually written).
  *
  * EXTENDED per the UX spec's resolution of a real tension: the task
  * doc wants a fabricated 4-dimension STALE/MISSING data-quality grid
@@ -53,6 +56,8 @@ export default function DecisionBanner({ investigation }) {
     risk_level: riskLevel,
     confidence,
     reason,
+    scenario,
+    ticket_id: ticketId,
     uncertainty_flags: uncertaintyFlags = [],
   } = investigation;
 
@@ -92,9 +97,19 @@ export default function DecisionBanner({ investigation }) {
           Risk: {riskLevel || 'UNKNOWN'}
         </span>
         <span className="decision-banner__confidence">Confidence: {formatPercent(confidence)}</span>
+        {scenario && scenario !== 'NORMAL' && (
+          <span className="decision-banner__scenario">{scenario}</span>
+        )}
       </div>
 
       <p className="decision-banner__reason">{reason || 'No reason provided.'}</p>
+
+      {decision && decision !== 'RELEASE' && (
+        <p className="decision-banner__handoff">
+          <span aria-hidden="true">→</span> Handed off to a human ops reviewer
+          {ticketId ? ` — ticket ${ticketId}` : ''}
+        </p>
+      )}
 
       {warningCount > 0 && (
         <p className="decision-banner__warning-note">
