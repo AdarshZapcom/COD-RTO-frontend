@@ -48,13 +48,19 @@ function formatDetail(detail) {
  * (the backend's error body is `{ detail: string }`, or FastAPI's
  * validation-error array shape) so callers can `catch (err)` and show
  * `err.message` directly.
+ *
+ * Resolves to the parsed body by default. Pass `{ includeResponse: true }`
+ * for the rare caller that also needs a response header (e.g.
+ * getTickets() reading X-Total-Count for real numbered pagination) -
+ * every other caller is unaffected.
  */
 async function request(path, options = {}) {
+  const { includeResponse, ...fetchOptions } = options;
   let res;
   try {
     res = await fetch(`${BASE_URL}${path}`, {
-      headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
-      ...options,
+      headers: { 'Content-Type': 'application/json', ...(fetchOptions.headers || {}) },
+      ...fetchOptions,
     });
   } catch (networkErr) {
     throw new Error(`Network error reaching backend: ${networkErr.message}`);
@@ -72,7 +78,7 @@ async function request(path, options = {}) {
     throw new Error(formatDetail(detail));
   }
 
-  return body;
+  return includeResponse ? { body, response: res } : body;
 }
 
 /**
@@ -118,12 +124,26 @@ export function getInsights(params = {}) {
 
 /**
  * GET /tickets?status=OPEN&limit=&offset=
+ *
+ * Returns both the page of tickets and the total OPEN count (from the
+ * X-Total-Count response header) so a caller can render real numbered
+ * pagination (page 1/2/3...) rather than an infinite "load more" with
+ * no sense of how much is left. Falls back to the page length itself
+ * if the header is ever missing (e.g. an older/mocked backend), so
+ * pagination degrades to "just this page" instead of throwing.
+ *
  * @param {{ status?: string, limit?: number, offset?: number }} [params]
- * @returns {Promise<import('../types').TicketRow[]>}
+ * @returns {Promise<{ tickets: import('../types').TicketRow[], total: number }>}
  */
-export function getTickets(params = {}) {
+export async function getTickets(params = {}) {
   const { status, limit, offset } = params;
-  return request(`/tickets${buildQuery({ status, limit, offset })}`);
+  const { body, response } = await request(
+    `/tickets${buildQuery({ status, limit, offset })}`,
+    { includeResponse: true },
+  );
+  const totalHeader = response.headers.get('X-Total-Count');
+  const total = totalHeader !== null ? Number(totalHeader) : body.length;
+  return { tickets: body, total };
 }
 
 /**
