@@ -83,12 +83,25 @@ async function request(path, options = {}) {
 
 /**
  * GET /orders?scenario=&limit=&offset=
+ *
+ * Returns both the page of orders and the total matching count (from
+ * the X-Total-Count response header, reflecting the scenario filter)
+ * so a caller can render real numbered pagination - same pattern as
+ * getTickets(). Falls back to the page length if the header is ever
+ * missing.
+ *
  * @param {{ scenario?: string, limit?: number, offset?: number }} [params]
- * @returns {Promise<import('../types').OrderSummary[]>}
+ * @returns {Promise<{ orders: import('../types').OrderSummary[], total: number }>}
  */
-export function getOrders(params = {}) {
+export async function getOrders(params = {}) {
   const { scenario, limit, offset } = params;
-  return request(`/orders${buildQuery({ scenario, limit, offset })}`);
+  const { body, response } = await request(
+    `/orders${buildQuery({ scenario, limit, offset })}`,
+    { includeResponse: true },
+  );
+  const totalHeader = response.headers.get('X-Total-Count');
+  const total = totalHeader !== null ? Number(totalHeader) : body.length;
+  return { orders: body, total };
 }
 
 /**

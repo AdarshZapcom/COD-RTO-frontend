@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getOrders } from '../../api/client';
 import { formatScenario, describeScenario } from '../../lib/format.js';
+import { windowedPageNumbers } from '../../lib/pagination.js';
 import './OrderPicker.css';
 
-// PAGE_SIZE mirrors the backend's own default (`limit: int = Query(50, ...)`
-// in src/api.py) so the first page here matches what GET /orders returns
-// with no params at all.
-const PAGE_SIZE = 50;
+// Real numbered pagination against GET /orders' limit/offset + its
+// X-Total-Count header (see getOrders() in api/client.js). Kept small
+// (10) so a page of order rows stays scannable in the fixed-width rail
+// without much scrolling.
+const PAGE_SIZE = 10;
 
 // Real scenario values confirmed in the backend's synthetic data generator
 // (src/data_generator.py `special_scenarios` / `scenario` assignments) -
@@ -37,86 +39,70 @@ const SCENARIOS = [
  * GROUP 1 (pairs with AdHocOrderForm) - owns this file + OrderPicker.css only.
  *
  * Searchable/filterable list from GET /orders (filter by `scenario` for
- * rehearsal, paginated via `limit`/`offset`). Each row: order_id,
+ * rehearsal), with real numbered pagination (Prev / 1 2 3 ... / Next)
+ * against the backend's limit/offset + X-Total-Count. Each row: order_id,
  * customer_id, pincode, courier_id, order_value (+ scenario badge when it's
  * not the default "NORMAL"). Selecting a row calls `onSelectOrder(order_id)`
  * - App owns the actual GET /orders/{id}/investigate call and the
  * resulting shared `currentInvestigation`; this component only
  * fetches/renders the list and reports which row was picked.
  *
- * Full state set: loading (initial + scenario change), a separate
- * loading-more state for pagination that keeps the existing rows on
- * screen, error (with retry) that only clears the list when the very
- * first page failed, empty ("no orders match"), and populated.
+ * Full state set: loading (initial + scenario/page change), error (with
+ * retry) that only clears the list when the page load itself failed,
+ * empty ("no orders match"), and populated.
  *
  * @param {{ onSelectOrder: (orderId: string) => void, selectedOrderId: string|null }} props
  */
 export default function OrderPicker({ onSelectOrder, selectedOrderId }) {
   const [scenario, setScenario] = useState('');
   const [orders, setOrders] = useState([]);
-  const [offset, setOffset] = useState(0);
-  const [hasMore, setHasMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
 
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
   // Guards against out-of-order responses: e.g. the user flips the
-  // scenario filter twice quickly and the first request's response lands
-  // after the second's - without this it would clobber the newer result.
-  //
-  // Replace (page-0) fetches and append ("Load more") fetches get their own
-  // id counters rather than sharing one. If they shared one, a "Load more"
-  // request superseded by a scenario change would never self-clear its own
-  // loadingMore flag: the new (replace) fetch's finally block resets
-  // `loading`, not `loadingMore`, and the stale append fetch's own finally
-  // is gated on the shared counter, which the replace fetch has already
-  // moved past - so it silently no-ops and loadingMore is stuck true.
-  const replaceRequestIdRef = useRef(0);
-  const appendRequestIdRef = useRef(0);
+  // scenario filter or the page twice quickly and the first request's
+  // response lands after the second's - without this it would clobber
+  // the newer result.
+  const requestIdRef = useRef(0);
 
-  const fetchPage = useCallback((scenarioValue, pageOffset, append) => {
-    const activeRef = append ? appendRequestIdRef : replaceRequestIdRef;
-    const requestId = activeRef.current + 1;
-    activeRef.current = requestId;
+  const fetchPage = useCallback((scenarioValue, targetPage) => {
+    const requestId = requestIdRef.current + 1;
+    requestIdRef.current = requestId;
 
-    if (!append) {
-      // A fresh replace fetch supersedes any in-flight "Load more" fetch for
-      // the list it's about to replace: bump the append counter so that
-      // request's eventual response can't land on top of this new list, and
-      // clear its busy flag immediately instead of leaving the button stuck
-      // on "Loading…" until that now-irrelevant request happens to settle.
-      appendRequestIdRef.current += 1;
-      setLoadingMore(false);
-    }
-
-    const setBusy = append ? setLoadingMore : setLoading;
-    setBusy(true);
+    setLoading(true);
     setError(null);
 
-    getOrders({ scenario: scenarioValue || undefined, limit: PAGE_SIZE, offset: pageOffset })
-      .then((data) => {
-        if (activeRef.current !== requestId) return;
-        setOrders((prev) => (append ? [...prev, ...data] : data));
-        setOffset(pageOffset);
-        setHasMore(data.length === PAGE_SIZE);
+    getOrders({
+      scenario: scenarioValue || undefined,
+      limit: PAGE_SIZE,
+      offset: (targetPage - 1) * PAGE_SIZE,
+    })
+      .then(({ orders: data, total: totalCount }) => {
+        if (requestIdRef.current !== requestId) return;
+        setOrders(data);
+        setTotal(totalCount);
+        setPage(targetPage);
       })
       .catch((err) => {
-        if (activeRef.current !== requestId) return;
+        if (requestIdRef.current !== requestId) return;
         setError(err.message);
-        if (!append) {
-          setOrders([]);
-          setHasMore(false);
-        }
+        setOrders([]);
+        setTotal(0);
       })
       .finally(() => {
-        if (activeRef.current === requestId) setBusy(false);
+        if (requestIdRef.current === requestId) setLoading(false);
       });
   }, []);
 
   useEffect(() => {
-    fetchPage(scenario, 0, false);
-    // Re-run whenever the scenario filter changes; fetchPage itself never
-    // changes identity (empty dep array) so this only fires on `scenario`.
+    fetchPage(scenario, 1);
+    // Re-run whenever the scenario filter changes (always resets to page
+    // 1); fetchPage itself never changes identity (empty dep array) so
+    // this only fires on `scenario`.
   }, [scenario, fetchPage]);
 
   const showInitialLoading = loading && orders.length === 0 && !error;
@@ -153,7 +139,7 @@ export default function OrderPicker({ onSelectOrder, selectedOrderId }) {
       {showInitialError && (
         <div className="order-picker__error" role="alert">
           <p>{error}</p>
-          <button type="button" onClick={() => fetchPage(scenario, 0, false)}>
+          <button type="button" onClick={() => fetchPage(scenario, page)}>
             Retry
           </button>
         </div>
@@ -200,15 +186,47 @@ export default function OrderPicker({ onSelectOrder, selectedOrderId }) {
             </p>
           )}
 
-          {hasMore && (
-            <button
-              type="button"
-              className="order-picker__load-more"
-              onClick={() => fetchPage(scenario, offset + PAGE_SIZE, true)}
-              disabled={loadingMore}
-            >
-              {loadingMore ? 'Loading…' : 'Load more'}
-            </button>
+          {totalPages > 1 && (
+            <nav className="order-picker__pagination" aria-label="Orders pages">
+              <button
+                type="button"
+                onClick={() => fetchPage(scenario, page - 1)}
+                disabled={page <= 1 || loading}
+              >
+                Prev
+              </button>
+
+              {windowedPageNumbers(page, totalPages).map((entry, index) =>
+                entry === '…' ? (
+                  <span key={`ellipsis-${index}`} className="order-picker__pagination-ellipsis">
+                    …
+                  </span>
+                ) : (
+                  <button
+                    key={entry}
+                    type="button"
+                    className={entry === page ? 'is-active' : ''}
+                    aria-current={entry === page ? 'page' : undefined}
+                    onClick={() => fetchPage(scenario, entry)}
+                    disabled={loading}
+                  >
+                    {entry}
+                  </button>
+                ),
+              )}
+
+              <button
+                type="button"
+                onClick={() => fetchPage(scenario, page + 1)}
+                disabled={page >= totalPages || loading}
+              >
+                Next
+              </button>
+
+              <span className="order-picker__pagination-summary">
+                Page {page} of {totalPages} ({total})
+              </span>
+            </nav>
           )}
         </>
       )}

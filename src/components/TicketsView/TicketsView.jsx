@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { getTickets, resolveTicket } from '../../api/client';
 import { decisionColor, riskColor, formatDecision, splitUncertaintyFlags } from '../../lib/format.js';
+import { windowedPageNumbers } from '../../lib/pagination.js';
 import './TicketsView.css';
 
 /** Raw ticket rows join these as " | "-strings, not arrays like
@@ -17,40 +18,11 @@ function formatTimestamp(value) {
 
 const EMPTY_RESOLVE_FORM = { resolvedBy: '', resolutionNote: '' };
 
-// Mirrors OrderPicker's PAGE_SIZE - a live event/stress-test run can
-// accumulate hundreds of ad hoc tickets (see GET /tickets's own limit
-// default), so this view needs real numbered pagination against the
-// backend's limit/offset support, not a documented backend limit that
-// the UI itself ignores.
-const PAGE_SIZE = 50;
-
-/**
- * Windowed page-number list with ellipsis gaps, e.g. for current=5,
- * total=12: [1, '…', 3, 4, 5, 6, 7, '…', 12]. Always includes page 1
- * and the last page so an operator can jump straight to either end of
- * a 30+ page ticket list without stepping through every page.
- *
- * @param {number} current
- * @param {number} total
- * @returns {(number|'…')[]}
- */
-function windowedPageNumbers(current, total) {
-  const delta = 2;
-  const pages = [];
-  for (let p = 1; p <= total; p += 1) {
-    if (p === 1 || p === total || (p >= current - delta && p <= current + delta)) {
-      pages.push(p);
-    }
-  }
-  const withEllipsis = [];
-  let previous = 0;
-  for (const p of pages) {
-    if (previous && p - previous > 1) withEllipsis.push('…');
-    withEllipsis.push(p);
-    previous = p;
-  }
-  return withEllipsis;
-}
+// A live event/stress-test run can accumulate hundreds of ad hoc
+// tickets, so this view needs real numbered pagination against the
+// backend's limit/offset support. Kept small (7) so a page of
+// evidence-heavy ticket cards stays scannable without much scrolling.
+const PAGE_SIZE = 7;
 
 /**
  * GROUP 5 (pairs with InsightsStrip) - owns this file + TicketsView.css only.
