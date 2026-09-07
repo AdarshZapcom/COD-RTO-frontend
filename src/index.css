@@ -21,6 +21,14 @@
   --color-accent: #0f74b8;
   --color-accent-hover: #1f8ad0;
 
+  /* Secondary neutral accent - a muted teal, deliberately a different
+     hue from the status colors below (never used for decision/risk/
+     severity semantics) and from --color-accent (reserved for primary
+     nav/CTA). Used for panel-header icon badges, tab-underline active
+     state, and other non-status visual hierarchy. */
+  --color-secondary: #2f6d6a;
+  --color-secondary-bg: #e3f1ef;
+
   /* "Chrome" tokens - the dark header bar only (brand match for the Quess
      hackathon: Quess's own nav bar is a neutral dark charcoal gray, not
      navy - no blue hue in it at all, the blue is reserved for the accent).
@@ -76,7 +84,7 @@ body {
   /* Quess's own site is a dark nav bar over a light content canvas, not a
      fully dark page - only .app-header below gets the dark chrome
      treatment; the canvas stays light so cards/text need no rework. */
-  background: linear-gradient(160deg, #f4f8fc 0%, #e8eef7 100%);
+  background: linear-gradient(160deg, #eef3f9 0%, #dee7f2 100%);
   color: var(--color-text);
 }
 
@@ -107,6 +115,13 @@ body {
   border-radius: var(--radius-md);
 }
 
+.app-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-accent);
+}
+
 .app-header h1 {
   font-size: 1.25rem;
   margin: 0;
@@ -130,6 +145,9 @@ body {
 }
 
 .mode-switcher__tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   padding: 6px 14px;
   border: none;
   border-radius: var(--radius-pill);
@@ -194,17 +212,34 @@ body {
 
 .panel {
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  border: 1px solid #d4d9e0;
   border-radius: var(--radius-md);
   padding: var(--space-md);
   /* Defensive inheritance-boundary reset: .app-header is dark chrome with
      light text, so this guarantees every panel's own text stays on the
      light-theme color regardless of what an ancestor sets. */
   color: var(--color-text);
-  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.08);
+  box-shadow: 0 2px 6px rgba(16, 24, 40, 0.09), 0 1px 2px rgba(16, 24, 40, 0.06);
+  transition: box-shadow 0.16s ease, transform 0.16s ease;
 }
 
-.panel h2 {
+.panel:hover {
+  box-shadow: 0 8px 20px rgba(16, 24, 40, 0.12), 0 2px 6px rgba(16, 24, 40, 0.07);
+  transform: translateY(-1px);
+}
+
+/* Shared panel-header title style, used in place of the old bare `.panel
+   h2` descendant rule (that rule stopped covering EvidencePanel/
+   EvidenceComparison/PrecedentPanel/NarrativePanel once those four
+   became flat `.tab-section`s living inside one shared
+   InvestigationTabs card instead of their own `.panel`). Every panel
+   title across the app applies this class directly rather than relying
+   on an ancestor's class, so title styling no longer depends on
+   whether the title's own container happens to be a `.panel`. */
+.panel-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
   font-size: 0.95rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -212,10 +247,49 @@ body {
   margin: 0 0 12px;
 }
 
+.panel-title__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: var(--color-secondary-bg);
+  color: var(--color-secondary);
+  flex-shrink: 0;
+}
+
 .investigation-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: var(--space-md);
+  /* No gap: the two children are flat `.tab-section`s inside one shared
+     card (InvestigationTabs.jsx), separated by a border instead of
+     whitespace - see `.tab-section` below. */
+  gap: 0;
+}
+
+/* A flat content section living inside one shared card (used for
+   EvidencePanel/EvidenceComparison/PrecedentPanel/NarrativePanel, all
+   four now rendered inside InvestigationTabs' single `.panel` rather
+   than each carrying their own nested `.panel`, which used to read as
+   a bare tab strip floating above two separately-shadowed cards). */
+.tab-section {
+  padding: 20px;
+}
+
+.investigation-grid > .tab-section + .tab-section {
+  border-left: 1px solid var(--color-border);
+}
+
+/* Below this width `.investigation-grid` (auto-fit, 320px min) already
+   stacks the two sections into one column - flip the divider to a
+   horizontal rule so it still separates them instead of running down
+   the middle of a column that no longer exists beside it. */
+@media (max-width: 700px) {
+  .investigation-grid > .tab-section + .tab-section {
+    border-left: none;
+    border-top: 1px solid var(--color-border);
+  }
 }
 
 .empty-state {

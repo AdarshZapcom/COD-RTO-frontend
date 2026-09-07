@@ -1,3 +1,4 @@
+import { MessageIcon } from '../icons/Icon.jsx';
 import './NarrativePanel.css';
 
 const SOURCE_LABELS = {
@@ -33,8 +34,13 @@ const SOURCE_LABELS = {
 export default function NarrativePanel({ investigation }) {
   if (!investigation) {
     return (
-      <div className="panel narrative-panel">
-        <h2>Narrative</h2>
+      <div className="tab-section narrative-panel">
+        <h2 className="panel-title">
+          <span className="panel-title__icon">
+            <MessageIcon />
+          </span>
+          Narrative
+        </h2>
         <p className="empty-state">No investigation loaded.</p>
       </div>
     );
@@ -47,8 +53,13 @@ export default function NarrativePanel({ investigation }) {
   const hasNarrative = typeof narrative === 'string' && narrative.trim().length > 0;
 
   return (
-    <div className="panel narrative-panel">
-      <h2>Narrative</h2>
+    <div className="tab-section narrative-panel">
+      <h2 className="panel-title">
+        <span className="panel-title__icon">
+          <MessageIcon />
+        </span>
+        Narrative
+      </h2>
       <span
         className={`narrative-panel__source narrative-panel__source--${sourceModifier}`}
         role="status"

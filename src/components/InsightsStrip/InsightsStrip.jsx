@@ -1,7 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
 import { getInsights } from '../../api/client';
 import { severityColor, formatPercent } from '../../lib/format.js';
+import { BarsIcon } from '../icons/Icon.jsx';
 import './InsightsStrip.css';
+
+/** 30d-vs-7d rate mini bar chart, scaled to this one card's own two real
+ * values (rto_rate_7d/rto_rate_30d - both genuinely on the wire, unlike
+ * EvidencePanel's flags which have no numeric backing) - a 4px floor so a
+ * near-zero rate still renders as a visible sliver rather than nothing. */
+function rateBarHeights(rate7d, rate30d) {
+  const max = Math.max(rate7d ?? 0, rate30d ?? 0, 0.05);
+  const scale = (value) => Math.max(4, Math.round(((value ?? 0) / max) * 22));
+  return { h7: scale(rate7d), h30: scale(rate30d) };
+}
 
 /** Severity is not a plain "how bad" scale - LOW_SAMPLE means the rate
  * itself can't be trusted (too few orders), not "safer than MEDIUM". */
@@ -74,7 +85,12 @@ export default function InsightsStrip() {
   return (
     <div className="panel insights-strip">
       <div className="insights-strip__header">
-        <h2>Operational insights</h2>
+        <h2 className="panel-title">
+          <span className="panel-title__icon">
+            <BarsIcon />
+          </span>
+          Operational insights
+        </h2>
         <button
           type="button"
           className="insights-strip__refresh"
@@ -109,6 +125,7 @@ export default function InsightsStrip() {
             const isLowSample = insight.severity === 'LOW_SAMPLE';
             const deltaSign = insight.delta > 0 ? 'up' : insight.delta < 0 ? 'down' : 'flat';
             const deltaArrow = deltaSign === 'up' ? '▲' : deltaSign === 'down' ? '▼' : '→';
+            const { h7, h30 } = rateBarHeights(insight.rto_rate_7d, insight.rto_rate_30d);
 
             return (
               <li
@@ -126,6 +143,31 @@ export default function InsightsStrip() {
                 </div>
 
                 <div className="insights-strip__rates">
+                  <svg
+                    className="insights-strip__bars"
+                    width="28"
+                    height="24"
+                    viewBox="0 0 28 24"
+                    aria-hidden="true"
+                    focusable="false"
+                  >
+                    <rect
+                      x="0"
+                      y={24 - h30}
+                      width="10"
+                      height={h30}
+                      rx="2"
+                      style={{ fill: 'var(--color-border-input)' }}
+                    />
+                    <rect
+                      x="14"
+                      y={24 - h7}
+                      width="10"
+                      height={h7}
+                      rx="2"
+                      style={{ fill: severityColor(insight.severity) }}
+                    />
+                  </svg>
                   <span>7d {formatPercent(insight.rto_rate_7d)}</span>
                   <span>30d {formatPercent(insight.rto_rate_30d)}</span>
                   {!isLowSample && (
