@@ -1,3 +1,25 @@
+.tickets-view__load-more {
+  margin-top: 8px;
+  width: 100%;
+  padding: 6px 14px;
+  border: 1px solid var(--color-border-input);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.tickets-view__load-more:hover:not(:disabled) {
+  background: #f0f2f5;
+}
+
+.tickets-view__load-more:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .tickets-view__header {
   display: flex;
   align-items: center;

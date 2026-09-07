@@ -117,13 +117,13 @@ export function getInsights(params = {}) {
 }
 
 /**
- * GET /tickets?status=OPEN
- * @param {{ status?: string }} [params]
+ * GET /tickets?status=OPEN&limit=&offset=
+ * @param {{ status?: string, limit?: number, offset?: number }} [params]
  * @returns {Promise<import('../types').TicketRow[]>}
  */
 export function getTickets(params = {}) {
-  const { status } = params;
-  return request(`/tickets${buildQuery({ status })}`);
+  const { status, limit, offset } = params;
+  return request(`/tickets${buildQuery({ status, limit, offset })}`);
 }
 
 /**

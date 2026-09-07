@@ -17,6 +17,13 @@ function formatTimestamp(value) {
 
 const EMPTY_RESOLVE_FORM = { resolvedBy: '', resolutionNote: '' };
 
+// Mirrors OrderPicker's PAGE_SIZE - a live event/stress-test run can
+// accumulate hundreds of ad hoc tickets (see GET /tickets's own limit
+// default), so this view needs the same paginated "Load more" pattern
+// OrderPicker already uses, not just a documented backend limit that
+// the UI itself ignores.
+const PAGE_SIZE = 50;
+
 /**
  * GROUP 5 (pairs with InsightsStrip) - owns this file + TicketsView.css only.
  *
@@ -42,6 +49,16 @@ export default function TicketsView() {
   const [listLoading, setListLoading] = useState(true);
   const [listError, setListError] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [offset, setOffset] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  // Same request-id-guard pattern as OrderPicker.fetchPage: a replace
+  // fetch (initial load/refresh) and an append fetch ("Load more") get
+  // separate counters so a slower one can never clobber a faster,
+  // later one - see OrderPicker.jsx for the full rationale.
+  const replaceRequestIdRef = useRef(0);
+  const appendRequestIdRef = useRef(0);
 
   const [activeTicketId, setActiveTicketId] = useState(null);
   const [resolveForm, setResolveForm] = useState(EMPTY_RESOLVE_FORM);
@@ -91,20 +108,43 @@ export default function TicketsView() {
     activeTicketIdRef.current = activeTicketId;
   }, [activeTicketId]);
 
-  function loadTickets({ isRefresh = false } = {}) {
-    if (isRefresh) setRefreshing(true);
+  function loadTickets({ isRefresh = false, append = false, pageOffset = 0 } = {}) {
+    const activeRef = append ? appendRequestIdRef : replaceRequestIdRef;
+    const requestId = activeRef.current + 1;
+    activeRef.current = requestId;
+
+    if (!append) {
+      // A fresh replace fetch (initial load or refresh) supersedes any
+      // in-flight "Load more" fetch - see OrderPicker.fetchPage for the
+      // identical reasoning.
+      appendRequestIdRef.current += 1;
+      setLoadingMore(false);
+    }
+
+    if (append) setLoadingMore(true);
+    else if (isRefresh) setRefreshing(true);
     else setListLoading(true);
     setListError(null);
-    getTickets({ status: 'OPEN' })
+
+    getTickets({ status: 'OPEN', limit: PAGE_SIZE, offset: pageOffset })
       .then((data) => {
-        if (mountedRef.current) setTickets(data);
+        if (!mountedRef.current || activeRef.current !== requestId) return;
+        setTickets((prev) => (append ? [...prev, ...data] : data));
+        setOffset(pageOffset);
+        setHasMore(data.length === PAGE_SIZE);
       })
       .catch((err) => {
-        if (mountedRef.current) setListError(err.message);
+        if (!mountedRef.current || activeRef.current !== requestId) return;
+        setListError(err.message);
+        if (!append) {
+          setTickets([]);
+          setHasMore(false);
+        }
       })
       .finally(() => {
-        if (!mountedRef.current) return;
-        if (isRefresh) setRefreshing(false);
+        if (!mountedRef.current || activeRef.current !== requestId) return;
+        if (append) setLoadingMore(false);
+        else if (isRefresh) setRefreshing(false);
         else setListLoading(false);
       });
   }
@@ -340,6 +380,17 @@ export default function TicketsView() {
             );
           })}
         </ul>
+      )}
+
+      {hasMore && (
+        <button
+          type="button"
+          className="tickets-view__load-more"
+          onClick={() => loadTickets({ append: true, pageOffset: offset + PAGE_SIZE })}
+          disabled={loadingMore}
+        >
+          {loadingMore ? 'Loading…' : 'Load more'}
+        </button>
       )}
     </div>
   );

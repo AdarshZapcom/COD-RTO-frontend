@@ -145,6 +145,10 @@ export default function InsightsStrip() {
                 )}
 
                 <p className="insights-strip__action">{insight.recommended_action}</p>
+
+                {insight.estimated_impact && (
+                  <p className="insights-strip__impact">{insight.estimated_impact}</p>
+                )}
               </li>
             );
           })}
