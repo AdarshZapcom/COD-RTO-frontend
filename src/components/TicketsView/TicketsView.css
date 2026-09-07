@@ -1,3 +1,51 @@
+.tickets-view__pagination {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.tickets-view__pagination button {
+  min-width: 30px;
+  padding: 5px 10px;
+  border: 1px solid var(--color-border-input);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.tickets-view__pagination button:hover:not(:disabled) {
+  background: #f0f2f5;
+}
+
+.tickets-view__pagination button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.tickets-view__pagination button.is-active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #fff;
+  font-weight: 700;
+  cursor: default;
+}
+
+.tickets-view__pagination-ellipsis {
+  padding: 0 4px;
+  color: var(--color-text-muted);
+}
+
+.tickets-view__pagination-summary {
+  margin-left: auto;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
 .tickets-view__header {
   display: flex;
   align-items: center;

@@ -39,6 +39,7 @@
  * @property {'RELEASE'|'HOLD_FOR_VERIFICATION'|'ESCALATE'} decision
  * @property {'LOW'|'MEDIUM'|'HIGH'} risk_level
  * @property {number} confidence - 0-1
+ * @property {string[]} confidence_factors - concrete reasons behind `confidence` (sample sizes, verification, flag counts)
  * @property {string} reason
  * @property {string[]} supporting_evidence
  * @property {string[]} counter_evidence

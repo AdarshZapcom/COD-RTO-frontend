@@ -18,6 +18,41 @@ function formatTimestamp(value) {
 
 const EMPTY_RESOLVE_FORM = { resolvedBy: '', resolutionNote: '' };
 
+// Mirrors OrderPicker's PAGE_SIZE - a live event/stress-test run can
+// accumulate hundreds of ad hoc tickets (see GET /tickets's own limit
+// default), so this view needs real numbered pagination against the
+// backend's limit/offset support, not a documented backend limit that
+// the UI itself ignores.
+const PAGE_SIZE = 50;
+
+/**
+ * Windowed page-number list with ellipsis gaps, e.g. for current=5,
+ * total=12: [1, '…', 3, 4, 5, 6, 7, '…', 12]. Always includes page 1
+ * and the last page so an operator can jump straight to either end of
+ * a 30+ page ticket list without stepping through every page.
+ *
+ * @param {number} current
+ * @param {number} total
+ * @returns {(number|'…')[]}
+ */
+function windowedPageNumbers(current, total) {
+  const delta = 2;
+  const pages = [];
+  for (let p = 1; p <= total; p += 1) {
+    if (p === 1 || p === total || (p >= current - delta && p <= current + delta)) {
+      pages.push(p);
+    }
+  }
+  const withEllipsis = [];
+  let previous = 0;
+  for (const p of pages) {
+    if (previous && p - previous > 1) withEllipsis.push('…');
+    withEllipsis.push(p);
+    previous = p;
+  }
+  return withEllipsis;
+}
+
 /**
  * GROUP 5 (pairs with InsightsStrip) - owns this file + TicketsView.css only.
  *
@@ -43,6 +78,15 @@ export default function TicketsView() {
   const [listLoading, setListLoading] = useState(true);
   const [listError, setListError] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  // Guards against out-of-order responses: switching pages quickly (or
+  // hitting refresh mid-fetch) could otherwise let a slower, earlier
+  // request's response land after a faster, later one and show the
+  // wrong page - same reasoning as OrderPicker.fetchPage's requestIdRef.
+  const requestIdRef = useRef(0);
 
   const [activeTicketId, setActiveTicketId] = useState(null);
   const [resolveForm, setResolveForm] = useState(EMPTY_RESOLVE_FORM);
@@ -92,19 +136,29 @@ export default function TicketsView() {
     activeTicketIdRef.current = activeTicketId;
   }, [activeTicketId]);
 
-  function loadTickets({ isRefresh = false } = {}) {
+  function loadTickets({ isRefresh = false, targetPage = 1 } = {}) {
+    const requestId = requestIdRef.current + 1;
+    requestIdRef.current = requestId;
+
     if (isRefresh) setRefreshing(true);
     else setListLoading(true);
     setListError(null);
-    getTickets({ status: 'OPEN' })
-      .then((data) => {
-        if (mountedRef.current) setTickets(data);
+
+    getTickets({ status: 'OPEN', limit: PAGE_SIZE, offset: (targetPage - 1) * PAGE_SIZE })
+      .then(({ tickets: data, total: totalCount }) => {
+        if (!mountedRef.current || requestIdRef.current !== requestId) return;
+        setTickets(data);
+        setTotal(totalCount);
+        setPage(targetPage);
       })
       .catch((err) => {
-        if (mountedRef.current) setListError(err.message);
+        if (!mountedRef.current || requestIdRef.current !== requestId) return;
+        setListError(err.message);
+        setTickets([]);
+        setTotal(0);
       })
       .finally(() => {
-        if (!mountedRef.current) return;
+        if (!mountedRef.current || requestIdRef.current !== requestId) return;
         if (isRefresh) setRefreshing(false);
         else setListLoading(false);
       });
@@ -171,8 +225,10 @@ export default function TicketsView() {
         setResolveForm(EMPTY_RESOLVE_FORM);
       }
       // Resolved tickets are no longer OPEN - drop it locally instead of
-      // a full round-trip re-fetch.
+      // a full round-trip re-fetch. Also decrement `total` so the page
+      // count doesn't drift stale until the next refresh/page change.
       setTickets((prev) => prev.filter((t) => t.ticket_id !== ticketId));
+      setTotal((prev) => Math.max(0, prev - 1));
     } catch (err) {
       if (mountedRef.current) {
         setResolveErrors((prev) => ({ ...prev, [ticketId]: err.message }));
@@ -356,6 +412,49 @@ export default function TicketsView() {
             );
           })}
         </ul>
+      )}
+
+      {totalPages > 1 && (
+        <nav className="tickets-view__pagination" aria-label="Tickets pages">
+          <button
+            type="button"
+            onClick={() => loadTickets({ targetPage: page - 1 })}
+            disabled={page <= 1 || listLoading || refreshing}
+          >
+            Prev
+          </button>
+
+          {windowedPageNumbers(page, totalPages).map((entry, index) =>
+            entry === '…' ? (
+              <span key={`ellipsis-${index}`} className="tickets-view__pagination-ellipsis">
+                …
+              </span>
+            ) : (
+              <button
+                key={entry}
+                type="button"
+                className={entry === page ? 'is-active' : ''}
+                aria-current={entry === page ? 'page' : undefined}
+                onClick={() => loadTickets({ targetPage: entry })}
+                disabled={listLoading || refreshing}
+              >
+                {entry}
+              </button>
+            ),
+          )}
+
+          <button
+            type="button"
+            onClick={() => loadTickets({ targetPage: page + 1 })}
+            disabled={page >= totalPages || listLoading || refreshing}
+          >
+            Next
+          </button>
+
+          <span className="tickets-view__pagination-summary">
+            Page {page} of {totalPages} ({total} open)
+          </span>
+        </nav>
       )}
     </div>
   );

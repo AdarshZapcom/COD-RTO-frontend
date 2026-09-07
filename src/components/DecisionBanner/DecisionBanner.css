@@ -105,6 +105,17 @@
   font-size: 0.95rem;
 }
 
+.decision-banner__confidence-factors {
+  margin: 6px 0 0;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.decision-banner__confidence-factors-label {
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
 .decision-banner__scenario-explainer {
   margin: 6px 0 0;
   font-size: 0.85rem;

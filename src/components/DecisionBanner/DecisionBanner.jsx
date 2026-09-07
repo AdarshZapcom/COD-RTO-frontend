@@ -70,6 +70,7 @@ export default function DecisionBanner({ investigation }) {
     decision,
     risk_level: riskLevel,
     confidence,
+    confidence_factors: confidenceFactors = [],
     reason,
     scenario,
     ticket_id: ticketId,
@@ -131,6 +132,13 @@ export default function DecisionBanner({ investigation }) {
           )}
         </div>
       </div>
+
+      {confidenceFactors.length > 0 && (
+        <p className="decision-banner__confidence-factors">
+          <span className="decision-banner__confidence-factors-label">Confidence based on:</span>{' '}
+          {confidenceFactors.join('; ')}
+        </p>
+      )}
 
       <p className="decision-banner__reason">{reason || 'No reason provided.'}</p>
 
