@@ -56,7 +56,8 @@
   --color-danger-border: #ffc1bc;
   --color-neutral-text: #5b6472;
 
-  --radius-md: 8px;
+  --radius-md: 12px;
+  --radius-lg: 22px;
   --radius-pill: 999px;
   --space-sm: 8px;
   --space-md: 16px;
@@ -88,11 +89,25 @@ body {
   color: var(--color-text);
 }
 
+/* The whole app reads as one floating rounded "window" on the gradient
+   canvas (an app-like shell) instead of flat full-bleed content - a
+   thin visible margin all around lets the canvas frame it, with a
+   bigger radius than any panel inside carrying the curve through.
+   .app-shell__inner (below) owns the actual scrolling/layout that used
+   to live directly on .app-shell. */
 .app-shell {
   max-width: 1360px;
-  margin: 0 auto;
-  padding: 16px 24px;
-  height: 100vh;
+  height: calc(100vh - 16px);
+  margin: 8px auto;
+  border-radius: var(--radius-lg);
+  background: #eef1f5;
+  box-shadow: 0 12px 32px rgba(16, 24, 40, 0.1), 0 2px 8px rgba(16, 24, 40, 0.06);
+  overflow: hidden;
+}
+
+.app-shell__inner {
+  height: 100%;
+  padding: 10px 16px 16px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -320,6 +335,65 @@ body {
 .empty-state {
   color: #8a93a1;
   font-size: 0.9rem;
+}
+
+/* A considered landing state for .app-main (no investigation selected
+   yet) - a centered icon + heading + description + two hint pills,
+   instead of a thin one-line strip over an otherwise-empty column that
+   read as unfinished rather than intentional. */
+.investigate-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+  padding: 56px 40px;
+}
+
+.investigate-empty__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--color-secondary-bg);
+  color: var(--color-secondary);
+}
+
+.investigate-empty__title {
+  margin: 0 0 6px;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.investigate-empty__description {
+  margin: 0;
+  max-width: 420px;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--color-text-muted);
+}
+
+.investigate-empty__hints {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 6px;
+}
+
+.investigate-empty__hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--color-secondary-bg);
+  color: var(--color-secondary);
+  font-size: 0.78rem;
+  font-weight: 700;
 }
 
 .panel--error {

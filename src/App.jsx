@@ -7,7 +7,7 @@ import DecisionBanner from './components/DecisionBanner/DecisionBanner.jsx';
 import InvestigationTabs from './components/InvestigationTabs/InvestigationTabs.jsx';
 import InsightsStrip from './components/InsightsStrip/InsightsStrip.jsx';
 import TicketsView from './components/TicketsView/TicketsView.jsx';
-import { SearchIcon, TicketIcon } from './components/icons/Icon.jsx';
+import { SearchIcon, TicketIcon, ListIcon, PencilIcon } from './components/icons/Icon.jsx';
 
 // Investigate = pick/submit one order and see its decision. Ops & tickets =
 // courier x pincode monitoring and open escalations, independent of any
@@ -127,6 +127,7 @@ export default function App() {
 
   return (
     <div className="app-shell">
+      <div className="app-shell__inner">
       <header className="app-header">
         <div className="app-header__brand">
           <h1>
@@ -185,8 +186,28 @@ export default function App() {
               </>
             ) : (
               !investigationLoading && (
-                <div className="panel empty-state">
-                  Pick an order from the list, or submit an ad-hoc order, to see an investigation.
+                <div className="panel investigate-empty">
+                  <div className="investigate-empty__icon" aria-hidden="true">
+                    <SearchIcon width={30} height={30} />
+                  </div>
+                  <div>
+                    <h2 className="investigate-empty__title">Pick an order to see the reasoning</h2>
+                    <p className="investigate-empty__description">
+                      Select any order from the list on the left, or submit an ad-hoc customer /
+                      pincode / courier combination &mdash; either way you&rsquo;ll get the full
+                      decision, the evidence behind it, and past precedent.
+                    </p>
+                  </div>
+                  <div className="investigate-empty__hints">
+                    <span className="investigate-empty__hint">
+                      <ListIcon />
+                      Browse existing orders
+                    </span>
+                    <span className="investigate-empty__hint">
+                      <PencilIcon />
+                      Or check a new one
+                    </span>
+                  </div>
                 </div>
               )
             )}
@@ -198,6 +219,7 @@ export default function App() {
           <TicketsView />
         </div>
       )}
+    </div>
     </div>
   );
 }

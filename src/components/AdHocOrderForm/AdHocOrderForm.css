@@ -12,7 +12,11 @@
 
 .adhoc-form__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  /* A literal 2-column track, not auto-fit/minmax(150px, 1fr) - at this
+     rail's actual width (340px minus panel padding) two 150px+ tracks
+     plus the gap didn't fit, so auto-fit silently collapsed to a single
+     column and doubled the form's height for no layout reason. */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px 12px;
 }
 

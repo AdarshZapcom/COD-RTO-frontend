@@ -152,10 +152,7 @@ export default function AdHocOrderForm({ onSubmit, submitting }) {
         </span>
         Order check
       </h2>
-      <p className="adhoc-form__hint">
-        Enter any customer / pincode / courier combination - new or existing - and submit to run a
-        live investigation against it.
-      </p>
+      <p className="adhoc-form__hint">Any customer / pincode / courier combination, new or existing.</p>
 
       <form onSubmit={handleSubmit} noValidate>
         <div className="adhoc-form__grid">

@@ -40,7 +40,12 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  max-height: 360px;
+  /* Shorter than before (was 360px) - the rail's total content (this
+     list + pagination + the ad-hoc form below) was taller than a
+     typical viewport, forcing a scroll just to reach the form. Rows
+     beyond what fits here are still reachable via this list's own
+     scrollbar, unaffected. */
+  max-height: 220px;
   overflow-y: auto;
 }
 
