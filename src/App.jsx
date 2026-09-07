@@ -40,6 +40,12 @@ export default function App() {
   const [investigationLoading, setInvestigationLoading] = useState(false);
   const [investigationError, setInvestigationError] = useState(null);
 
+  // Targets for the "Investigate" empty-state hints below - each ref
+  // exposes one imperative method (focusList / focusFirstField) rather
+  // than reaching into either component's internals.
+  const orderPickerRef = useRef(null);
+  const adHocFormRef = useRef(null);
+
   // Guards against out-of-order responses: OrderPicker's row buttons and
   // AdHocOrderForm's submit both funnel through runInvestigation, and
   // neither disables every other trigger while a request is in flight (only
@@ -162,8 +168,8 @@ export default function App() {
       {mode === 'investigate' ? (
         <div className="app-body">
           <div className="app-rail">
-            <OrderPicker onSelectOrder={handleSelectOrder} selectedOrderId={selectedOrderId} />
-            <AdHocOrderForm onSubmit={handleAdHocSubmit} submitting={investigationLoading} />
+            <OrderPicker ref={orderPickerRef} onSelectOrder={handleSelectOrder} selectedOrderId={selectedOrderId} />
+            <AdHocOrderForm ref={adHocFormRef} onSubmit={handleAdHocSubmit} submitting={investigationLoading} />
           </div>
 
           <div className="app-main">
@@ -199,14 +205,22 @@ export default function App() {
                     </p>
                   </div>
                   <div className="investigate-empty__hints">
-                    <span className="investigate-empty__hint">
+                    <button
+                      type="button"
+                      className="investigate-empty__hint"
+                      onClick={() => orderPickerRef.current?.focusList()}
+                    >
                       <ListIcon />
                       Browse existing orders
-                    </span>
-                    <span className="investigate-empty__hint">
+                    </button>
+                    <button
+                      type="button"
+                      className="investigate-empty__hint"
+                      onClick={() => adHocFormRef.current?.focusFirstField()}
+                    >
                       <PencilIcon />
                       Or check a new one
-                    </span>
+                    </button>
                   </div>
                 </div>
               )

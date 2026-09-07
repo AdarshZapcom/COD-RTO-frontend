@@ -384,16 +384,31 @@ body {
   margin-top: 6px;
 }
 
+/* Now real buttons (focus OrderPicker's filter / AdHocOrderForm's
+   first field - see App.jsx) rather than inert decoration, so this
+   needs the usual button resets plus a hover/active state to read as
+   genuinely clickable. */
 .investigate-empty__hint {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 4px 12px;
+  border: none;
   border-radius: var(--radius-pill);
   background: var(--color-secondary-bg);
   color: var(--color-secondary);
+  font-family: inherit;
   font-size: 0.78rem;
   font-weight: 700;
+  cursor: pointer;
+}
+
+.investigate-empty__hint:hover {
+  background: color-mix(in srgb, var(--color-secondary) 18%, var(--color-secondary-bg));
+}
+
+.investigate-empty__hint:active {
+  background: color-mix(in srgb, var(--color-secondary) 28%, var(--color-secondary-bg));
 }
 
 .panel--error {

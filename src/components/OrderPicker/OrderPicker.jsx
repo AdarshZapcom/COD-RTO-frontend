@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { getOrders } from '../../api/client';
 import { formatScenario, describeScenario } from '../../lib/format.js';
 import { windowedPageNumbers } from '../../lib/pagination.js';
@@ -52,15 +52,33 @@ const SCENARIOS = [
  * retry) that only clears the list when the page load itself failed,
  * empty ("no orders match"), and populated.
  *
+ * Exposes `focusList()` via ref (see App.jsx's "Investigate" empty-state
+ * hint) so a sibling can direct focus/attention here without reaching
+ * into internals - focuses the scenario filter, which doubles as the
+ * list's own visible heading control.
+ *
  * @param {{ onSelectOrder: (orderId: string) => void, selectedOrderId: string|null }} props
  */
-export default function OrderPicker({ onSelectOrder, selectedOrderId }) {
+const OrderPicker = forwardRef(function OrderPicker({ onSelectOrder, selectedOrderId }, ref) {
   const [scenario, setScenario] = useState('');
   const [orders, setOrders] = useState([]);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const scenarioSelectRef = useRef(null);
+
+  useImperativeHandle(ref, () => ({
+    // scrollIntoView first: focus() alone can be too subtle to notice
+    // (a thin outline, no visible motion) when this panel is currently
+    // scrolled out of view - e.g. the app-rail is stacked above
+    // app-main below the 860px breakpoint.
+    focusList: () => {
+      const el = scenarioSelectRef.current;
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el?.focus({ preventScroll: true });
+    },
+  }));
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
@@ -123,6 +141,7 @@ export default function OrderPicker({ onSelectOrder, selectedOrderId }) {
         <label className="order-picker__filter">
           <span>Scenario</span>
           <select
+            ref={scenarioSelectRef}
             value={scenario}
             onChange={(event) => setScenario(event.target.value)}
             disabled={loading}
@@ -238,4 +257,6 @@ export default function OrderPicker({ onSelectOrder, selectedOrderId }) {
       )}
     </div>
   );
-}
+});
+
+export default OrderPicker;

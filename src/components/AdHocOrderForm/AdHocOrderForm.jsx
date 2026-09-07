@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { forwardRef, useEffect, useId, useImperativeHandle, useRef, useState } from 'react';
 import { PencilIcon } from '../icons/Icon.jsx';
 import './AdHocOrderForm.css';
 
@@ -82,13 +82,31 @@ function buildPayload(form) {
  * relabels it, which is the only feedback this isolated component can
  * give about an in-flight submission.
  *
+ * Exposes `focusFirstField()` via ref (see App.jsx's "Investigate"
+ * empty-state hint) so a sibling can direct focus into this form
+ * without reaching into its internals - the same fieldRefs this
+ * component already uses to focus the first invalid field on a failed
+ * submit, just made available to a caller too.
+ *
  * @param {{ onSubmit: (payload: import('../../types').AdHocOrderPayload) => void, submitting: boolean }} props
  */
-export default function AdHocOrderForm({ onSubmit, submitting }) {
+const AdHocOrderForm = forwardRef(function AdHocOrderForm({ onSubmit, submitting }, ref) {
   const uid = useId();
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
   const fieldRefs = useRef({});
+
+  useImperativeHandle(ref, () => ({
+    // scrollIntoView first: focus() alone can be too subtle to notice
+    // (a thin outline, no visible motion) when this form is currently
+    // scrolled out of view - e.g. the app-rail is stacked above
+    // app-main below the 860px breakpoint.
+    focusFirstField: () => {
+      const el = fieldRefs.current.customer_id;
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el?.focus({ preventScroll: true });
+    },
+  }));
 
   // `submitting` is React state, so it only updates on the next render -
   // two `.click()` calls fired in the same tick (no render between them)
@@ -256,4 +274,6 @@ export default function AdHocOrderForm({ onSubmit, submitting }) {
       </form>
     </div>
   );
-}
+});
+
+export default AdHocOrderForm;
