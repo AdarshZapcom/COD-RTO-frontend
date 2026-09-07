@@ -162,12 +162,16 @@ export async function getTickets(params = {}) {
 /**
  * POST /tickets/{ticket_id}/resolve
  * @param {string} ticketId
- * @param {{ resolvedBy: string, resolutionNote: string }} body
- * @returns {Promise<{ ticket_id: string, status: string, resolved_by: string, resolution_note: string }>}
+ * @param {{ resolvedBy: string, resolutionNote: string, resolutionOutcome: string }} body
+ * @returns {Promise<{ ticket_id: string, status: string, resolved_by: string, resolution_note: string, resolution_outcome: string }>}
  */
-export function resolveTicket(ticketId, { resolvedBy, resolutionNote }) {
+export function resolveTicket(ticketId, { resolvedBy, resolutionNote, resolutionOutcome }) {
   return request(`/tickets/${encodeURIComponent(ticketId)}/resolve`, {
     method: 'POST',
-    body: JSON.stringify({ resolved_by: resolvedBy, resolution_note: resolutionNote }),
+    body: JSON.stringify({
+      resolved_by: resolvedBy,
+      resolution_note: resolutionNote,
+      resolution_outcome: resolutionOutcome,
+    }),
   });
 }

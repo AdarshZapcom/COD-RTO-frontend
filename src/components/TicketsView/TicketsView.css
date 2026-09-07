@@ -369,6 +369,7 @@
 }
 
 .tickets-view__resolve-form input,
+.tickets-view__resolve-form select,
 .tickets-view__resolve-form textarea {
   padding: 6px 8px;
   border: 1px solid var(--color-border-input);
@@ -379,8 +380,40 @@
 }
 
 .tickets-view__resolve-form input:disabled,
+.tickets-view__resolve-form select:disabled,
 .tickets-view__resolve-form textarea:disabled {
   opacity: 0.7;
+}
+
+/* Outcome badge on a resolved ticket - semantic color reused from the
+   same success/warning/danger tokens as decision/risk pills elsewhere
+   in this app (see index.css), not a new accent: VERIFIED_RELEASE reads
+   as "safe to ship" (success), RISKY_BLOCK_COD as "do not ship"
+   (danger), ESCALATE_MANAGER as "still undecided" (warning). */
+.tickets-view__outcome {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-right: 6px;
+}
+
+.tickets-view__outcome--verified_release {
+  color: var(--color-success-text);
+  background: var(--color-success-bg);
+}
+
+.tickets-view__outcome--risky_block_cod {
+  color: var(--color-danger-text);
+  background: var(--color-danger-bg);
+}
+
+.tickets-view__outcome--escalate_manager {
+  color: var(--color-warning-text);
+  background: var(--color-warning-bg);
 }
 
 .tickets-view__resolve-error {

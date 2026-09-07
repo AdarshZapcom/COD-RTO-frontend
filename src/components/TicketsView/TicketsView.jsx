@@ -17,7 +17,21 @@ function formatTimestamp(value) {
   return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
 }
 
-const EMPTY_RESOLVE_FORM = { resolvedBy: '', resolutionNote: '' };
+const EMPTY_RESOLVE_FORM = { resolvedBy: '', resolutionNote: '', resolutionOutcome: '' };
+
+// The three real ops outcomes for a HOLD/ESCALATE ticket - tied to the
+// actual question a reviewer is answering (ship this order COD or
+// not), not a generic status list. Must match api.py's
+// RESOLUTION_OUTCOMES allowlist exactly.
+const RESOLUTION_OUTCOMES = [
+  { value: 'VERIFIED_RELEASE', label: 'Verified — release (ship COD)' },
+  { value: 'RISKY_BLOCK_COD', label: 'Risky — block COD (cancel / prepaid only)' },
+  { value: 'ESCALATE_MANAGER', label: 'Escalate to manager' },
+];
+
+const RESOLUTION_OUTCOME_LABELS = Object.fromEntries(
+  RESOLUTION_OUTCOMES.map((option) => [option.value, option.label])
+);
 
 // Client-side declutter filters over the currently-loaded page of
 // tickets - not a new backend query param (GET /tickets has no
@@ -58,14 +72,17 @@ const STATUS_TABS = [
  *
  * GET /tickets?status=OPEN|RESOLVED (an Open/Resolved tab switches
  * which), with a resolve action (POST /tickets/{id}/resolve) on the
- * Open tab only - a resolved ticket shows who closed it and why
- * instead of a Resolve button/form. Fully self-contained - fetches its
- * own data on mount, on manual refresh, and on tab switch, independent
- * of `currentInvestigation` and every other component.
+ * Open tab only - a resolved ticket shows its outcome badge plus who
+ * closed it and why, instead of a Resolve button/form. Fully
+ * self-contained - fetches its own data on mount, on manual refresh,
+ * and on tab switch, independent of `currentInvestigation` and every
+ * other component.
  *
  * Resolving is destructive (closes the escalation) and the backend
- * requires a real `resolved_by` / `resolution_note`, so "Resolve" does
- * not call the API directly - it reveals an inline confirm form
+ * requires a real `resolved_by` / `resolution_note` / `resolution_outcome`
+ * (the actual ops call: ship COD, block COD, or escalate further - see
+ * RESOLUTION_OUTCOMES), so "Resolve" does not call the API directly -
+ * it reveals an inline confirm form
  * (required resolved-by + resolution-note fields) scoped to that one
  * ticket; only submitting that form calls resolveTicket(). A native
  * `confirm()` popup would be unstyled/blocking and a full modal is more
@@ -264,12 +281,13 @@ export default function TicketsView() {
   async function confirmResolve(ticketId) {
     const resolvedBy = resolveForm.resolvedBy.trim();
     const resolutionNote = resolveForm.resolutionNote.trim();
-    if (!resolvedBy || !resolutionNote) return;
+    const resolutionOutcome = resolveForm.resolutionOutcome;
+    if (!resolvedBy || !resolutionNote || !resolutionOutcome) return;
 
     setResolvingId(ticketId);
     setResolveErrors((prev) => ({ ...prev, [ticketId]: null }));
     try {
-      await resolveTicket(ticketId, { resolvedBy, resolutionNote });
+      await resolveTicket(ticketId, { resolvedBy, resolutionNote, resolutionOutcome });
       if (!mountedRef.current) return;
       // Screen-reader announcement: the resolved row is about to
       // disappear visually with no other signal that anything happened.
@@ -303,7 +321,10 @@ export default function TicketsView() {
     }
   }
 
-  const canConfirm = resolveForm.resolvedBy.trim() !== '' && resolveForm.resolutionNote.trim() !== '';
+  const canConfirm =
+    resolveForm.resolvedBy.trim() !== '' &&
+    resolveForm.resolutionNote.trim() !== '' &&
+    resolveForm.resolutionOutcome !== '';
 
   const visibleTickets = tickets.filter(
     (t) =>
@@ -480,7 +501,14 @@ export default function TicketsView() {
 
                 {ticketsStatus === 'RESOLVED' && (
                   <p className="tickets-view__resolution">
-                    Resolved by <strong>{ticket.resolved_by || 'unknown'}</strong>
+                    {ticket.resolution_outcome && (
+                      <span
+                        className={`tickets-view__outcome tickets-view__outcome--${ticket.resolution_outcome.toLowerCase()}`}
+                      >
+                        {RESOLUTION_OUTCOME_LABELS[ticket.resolution_outcome] || ticket.resolution_outcome}
+                      </span>
+                    )}
+                    {' '}Resolved by <strong>{ticket.resolved_by || 'unknown'}</strong>
                     {ticket.resolved_at ? ` on ${formatTimestamp(ticket.resolved_at)}` : ''}
                     {ticket.resolution_note ? `: ${ticket.resolution_note}` : ''}
                   </p>
@@ -508,8 +536,27 @@ export default function TicketsView() {
                     }}
                   >
                     <p className="tickets-view__resolve-hint">
-                      Confirm resolution for {ticket.ticket_id} - both fields are required.
+                      Confirm resolution for {ticket.ticket_id} - all fields are required.
                     </p>
+
+                    <label htmlFor={`resolution-outcome-${ticket.ticket_id}`}>Outcome</label>
+                    <select
+                      id={`resolution-outcome-${ticket.ticket_id}`}
+                      value={resolveForm.resolutionOutcome}
+                      onChange={handleFormChange('resolutionOutcome')}
+                      required
+                      aria-required="true"
+                      disabled={isResolving}
+                    >
+                      <option value="" disabled>
+                        Choose an outcome…
+                      </option>
+                      {RESOLUTION_OUTCOMES.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
 
                     <label htmlFor={`resolved-by-${ticket.ticket_id}`}>Resolved by</label>
                     <input

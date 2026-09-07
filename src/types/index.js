@@ -82,6 +82,7 @@
  * @property {string} status
  * @property {string|null} resolved_by
  * @property {string|null} resolution_note
+ * @property {string|null} resolution_outcome
  * @property {string|null} resolved_at
  */
 
