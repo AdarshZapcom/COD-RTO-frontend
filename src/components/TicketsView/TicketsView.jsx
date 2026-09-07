@@ -44,13 +44,24 @@ const RISK_FILTERS = [
 // evidence-heavy ticket cards stays scannable without much scrolling.
 const PAGE_SIZE = 7;
 
+// GET /tickets?status= only ever accepts these two (see src/api.py) -
+// backed by the escalation_tickets.status column, which resolve_ticket()
+// already sets to RESOLVED, so this is a real server-side query, not a
+// client-side filter over one fetched page like decision/risk above.
+const STATUS_TABS = [
+  { key: 'OPEN', label: 'Open' },
+  { key: 'RESOLVED', label: 'Resolved' },
+];
+
 /**
  * GROUP 5 (pairs with InsightsStrip) - owns this file + TicketsView.css only.
  *
- * GET /tickets?status=OPEN, with a resolve action (POST
- * /tickets/{id}/resolve). Fully self-contained - fetches its own data
- * on mount (and on manual refresh), independent of `currentInvestigation`
- * and every other component.
+ * GET /tickets?status=OPEN|RESOLVED (an Open/Resolved tab switches
+ * which), with a resolve action (POST /tickets/{id}/resolve) on the
+ * Open tab only - a resolved ticket shows who closed it and why
+ * instead of a Resolve button/form. Fully self-contained - fetches its
+ * own data on mount, on manual refresh, and on tab switch, independent
+ * of `currentInvestigation` and every other component.
  *
  * Resolving is destructive (closes the escalation) and the backend
  * requires a real `resolved_by` / `resolution_note`, so "Resolve" does
@@ -72,6 +83,14 @@ export default function TicketsView() {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const [statusTab, setStatusTab] = useState('OPEN');
+  // The status the currently-loaded `tickets` actually belong to - set
+  // only once real data for that status arrives (see loadTickets). Not
+  // the same as statusTab, which flips the instant the toggle is
+  // clicked: a RESOLVED page can take a couple of seconds against a
+  // large table, and rendering must not label still-visible OPEN rows
+  // as resolved just because the toggle already says Resolved.
+  const [ticketsStatus, setTicketsStatus] = useState('OPEN');
 
   const [decisionFilter, setDecisionFilter] = useState('');
   const [riskFilter, setRiskFilter] = useState('');
@@ -134,15 +153,40 @@ export default function TicketsView() {
   function loadTickets({ isRefresh = false, targetPage = 1 } = {}) {
     const requestId = requestIdRef.current + 1;
     requestIdRef.current = requestId;
+    // Captured now, not read again in .then() below: a RESOLVED page can
+    // take a couple of seconds (large table), long enough that statusTab
+    // could have changed again before this particular request resolves -
+    // tickets/ticketsStatus must always be tagged with the status THIS
+    // request actually asked for, not whatever the toggle shows by then.
+    const requestedStatus = statusTab;
 
-    if (isRefresh) setRefreshing(true);
-    else setListLoading(true);
+    // Also clear the OTHER busy flag, not just set this request's own:
+    // if this call supersedes an in-flight request of the other kind
+    // (e.g. React StrictMode's dev double-invoke firing the initial
+    // load then immediately a tab-switch refresh), that older request's
+    // finally() below no-ops once it sees requestIdRef has moved on -
+    // it never gets to clear its own flag, so without this the stale
+    // flag (most often listLoading) would stay stuck true forever and
+    // the panel would show "Loading…" indefinitely.
+    if (isRefresh) {
+      setRefreshing(true);
+      setListLoading(false);
+    } else {
+      setListLoading(true);
+      setRefreshing(false);
+    }
     setListError(null);
 
-    getTickets({ status: 'OPEN', limit: PAGE_SIZE, offset: (targetPage - 1) * PAGE_SIZE })
+    getTickets({ status: requestedStatus, limit: PAGE_SIZE, offset: (targetPage - 1) * PAGE_SIZE })
       .then(({ tickets: data, total: totalCount }) => {
         if (!mountedRef.current || requestIdRef.current !== requestId) return;
         setTickets(data);
+        // Tags the data with the status it was actually fetched for -
+        // rendering (Resolve button vs. resolution info) keys off this,
+        // never off statusTab directly, so a still-in-flight tab switch
+        // never mislabels the previous tab's tickets as belonging to
+        // the newly-selected one before the real data arrives.
+        setTicketsStatus(requestedStatus);
         setTotal(totalCount);
         setPage(targetPage);
       })
@@ -159,10 +203,36 @@ export default function TicketsView() {
       });
   }
 
+  // True only for the very first fetch (nothing on screen yet to keep
+  // showing). A later status-tab switch instead goes through loadTickets'
+  // isRefresh path - same as a manual Refresh click - so the current
+  // list/filter bar stay visible (just marked aria-busy) instead of the
+  // whole panel blanking out to "Loading…" and back, which read as the
+  // page reloading rather than a quick in-place update.
+  const isFirstTicketLoadRef = useRef(true);
+
   useEffect(() => {
-    loadTickets();
+    if (isFirstTicketLoadRef.current) {
+      isFirstTicketLoadRef.current = false;
+      loadTickets();
+    } else {
+      loadTickets({ isRefresh: true });
+    }
+    // Re-run whenever the status tab changes (always resets to page 1);
+    // loadTickets itself isn't memoized, so this intentionally only
+    // fires on statusTab, same pattern as OrderPicker's scenario effect.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [statusTab]);
+
+  function handleStatusTabChange(nextStatus) {
+    if (nextStatus === statusTab) return;
+    // A resolve form open on an OPEN ticket makes no sense once we've
+    // navigated away from the Open tab - drop it rather than leave a
+    // stale form hanging off a ticket no longer even in view.
+    setActiveTicketId(null);
+    setResolveForm(EMPTY_RESOLVE_FORM);
+    setStatusTab(nextStatus);
+  }
 
   // Move focus into the confirm form the moment it appears, for keyboard
   // and screen-reader users triggering it from the "Resolve" button.
@@ -251,21 +321,40 @@ export default function TicketsView() {
           <span className="panel-title__icon">
             <TicketIcon />
           </span>
-          Open tickets
+          Tickets
         </h2>
+        <div className="tickets-view__status-tabs" role="tablist" aria-label="Ticket status">
+          {STATUS_TABS.map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              role="tab"
+              aria-selected={statusTab === tab.key}
+              className={statusTab === tab.key ? 'is-active' : ''}
+              onClick={() => handleStatusTabChange(tab.key)}
+              disabled={listLoading || refreshing}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
         <button
           type="button"
           className="tickets-view__refresh"
           onClick={() => loadTickets({ isRefresh: true })}
           disabled={listLoading || refreshing}
-          aria-label={refreshing ? 'Refreshing open tickets' : 'Refresh open tickets'}
+          aria-label={
+            refreshing
+              ? `Refreshing ${statusTab.toLowerCase()} tickets`
+              : `Refresh ${statusTab.toLowerCase()} tickets`
+          }
         >
           <RefreshIcon className={refreshing ? 'icon-spin' : undefined} />
         </button>
       </div>
 
       <div className="tickets-view__status" aria-live="polite">
-        {listLoading && <p className="empty-state">Loading open tickets…</p>}
+        {listLoading && <p className="empty-state">Loading {statusTab.toLowerCase()} tickets…</p>}
 
         {!listLoading && listError && (
           <div className="tickets-view__error" role="alert">
@@ -277,7 +366,9 @@ export default function TicketsView() {
         )}
 
         {!listLoading && !listError && tickets.length === 0 && (
-          <p className="empty-state">No open tickets - all clear.</p>
+          <p className="empty-state">
+            {statusTab === 'OPEN' ? 'No open tickets - all clear.' : 'No resolved tickets yet.'}
+          </p>
         )}
       </div>
 
@@ -370,7 +461,7 @@ export default function TicketsView() {
                     <span className="tickets-view__created">{formatTimestamp(ticket.created_at)}</span>
                   </div>
 
-                  {!isActive && (
+                  {ticketsStatus === 'OPEN' && !isActive && (
                     <button
                       type="button"
                       ref={(el) => {
@@ -386,6 +477,14 @@ export default function TicketsView() {
                 </div>
 
                 <p className="tickets-view__reason">{ticket.reason}</p>
+
+                {ticketsStatus === 'RESOLVED' && (
+                  <p className="tickets-view__resolution">
+                    Resolved by <strong>{ticket.resolved_by || 'unknown'}</strong>
+                    {ticket.resolved_at ? ` on ${formatTimestamp(ticket.resolved_at)}` : ''}
+                    {ticket.resolution_note ? `: ${ticket.resolution_note}` : ''}
+                  </p>
+                )}
 
                 {(ticket.narrative || supportingEvidence.length || counterEvidence.length || uncertaintyFlags.length) ? (
                   <details className="tickets-view__details">
@@ -500,7 +599,7 @@ export default function TicketsView() {
           </button>
 
           <span className="tickets-view__pagination-summary">
-            Page {page} of {totalPages} ({total} open)
+            Page {page} of {totalPages} ({total} {statusTab.toLowerCase()})
           </span>
         </nav>
       )}

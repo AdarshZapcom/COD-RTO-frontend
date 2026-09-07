@@ -129,13 +129,10 @@ export default function App() {
     <div className="app-shell">
       <header className="app-header">
         <div className="app-header__brand">
-          <SearchIcon width={22} height={22} />
-          <div className="app-header__brand-text">
-            <h1>
-              Signali<span className="app-header__brand-accent">Q</span>
-            </h1>
-            <p className="app-header__tagline">Know when to ship, know when to ask</p>
-          </div>
+          <h1>
+            Signali<span className="app-header__brand-accent">Q</span>
+          </h1>
+          <p className="app-header__tagline">Know when to ship, know when to ask</p>
         </div>
         <div className="mode-switcher" role="tablist" aria-label="View" onKeyDown={handleModeKeyDown}>
           {MODE_TABS.map((tab) => {

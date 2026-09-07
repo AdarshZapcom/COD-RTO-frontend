@@ -54,6 +54,55 @@
   margin-bottom: 12px;
 }
 
+/* Open/Resolved - a real server-side query switch (GET /tickets?status=),
+   not a client-side filter like the Decision/Risk selects below, so it
+   gets its own segmented toggle rather than living in the filter bar. */
+.tickets-view__status-tabs {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--radius-pill);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  margin-left: auto;
+  margin-right: 10px;
+}
+
+.tickets-view__status-tabs button {
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 5px 14px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.tickets-view__status-tabs button:hover:not(:disabled):not(.is-active) {
+  color: var(--color-text);
+}
+
+.tickets-view__status-tabs button.is-active {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.tickets-view__status-tabs button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.tickets-view__resolution {
+  margin: 6px 0 0;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.tickets-view__resolution strong {
+  color: var(--color-text);
+}
+
 .tickets-view__header h2 {
   margin: 0;
 }
@@ -181,7 +230,11 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-sm);
-  flex-wrap: wrap;
+  /* No flex-wrap here - .tickets-view__summary already wraps its own
+     children (id/order/pills/confidence/timestamp). Letting this outer
+     row wrap too let the Resolve button drop onto its own line
+     whenever the summary got long, so it landed in a different spot
+     row to row instead of staying anchored top-right. */
 }
 
 .tickets-view__summary {
@@ -189,6 +242,8 @@
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
   font-size: 0.85rem;
 }
 
@@ -221,6 +276,7 @@
   /* Solid accent fill, not the same bordered-white treatment as the
      card it sits on - this is the one action on the row, it needs to
      read as a button at a glance, not blend into the card surface. */
+  flex-shrink: 0;
   border: 1px solid var(--color-accent);
   background: var(--color-accent);
   color: #fff;

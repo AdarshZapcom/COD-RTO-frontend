@@ -118,34 +118,36 @@ body {
 .app-header__brand {
   display: flex;
   align-items: center;
-  gap: 10px;
-  color: var(--color-accent);
-}
-
-.app-header__brand-text {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
+  gap: 12px;
 }
 
 .app-header h1 {
-  font-size: 1.25rem;
+  /* Poppins (loaded in index.html) instead of the app's system-ui
+     default - a geometric, rounded bold sans so the wordmark's "Q"
+     reads with the same circular-bowl letterform weight as the
+     Quessathon host mark (style reference only; the actual host logo
+     asset is never used as this app's own brand). */
+  font-family: 'Poppins', system-ui, sans-serif;
+  font-size: 1.3rem;
   font-weight: 800;
   margin: 0;
   line-height: 1.1;
+  letter-spacing: -0.01em;
   color: var(--color-chrome-text);
 }
 
-/* The "Q" in the SignaliQ wordmark is always the brand's accent blue,
-   matching the logo artwork - kept as var(--color-accent) rather than a
-   hardcoded hex so it stays in lockstep if the accent color ever
-   changes (see index.css's design-tokens comment at the top). */
+/* Sampled directly from the Quessathon host mark's own "Q" stroke
+   (#0095da) - lighter than --color-accent (#0f74b8, used everywhere
+   else: buttons, active tabs, focus rings), so this is its own value
+   rather than overriding the shared token. */
 .app-header__brand-accent {
-  color: var(--color-accent);
+  color: #0095da;
 }
 
 .app-header__tagline {
   margin: 0;
+  padding-left: 12px;
+  border-left: 1px solid var(--color-chrome-border);
   font-size: 0.72rem;
   font-weight: 500;
   color: var(--color-chrome-text-muted);
