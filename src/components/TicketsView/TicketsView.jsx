@@ -127,18 +127,16 @@ export default function TicketsView() {
   // as resolved just because the toggle already says Resolved.
   const [ticketsStatus, setTicketsStatus] = useState('OPEN');
 
-  // One "Decision" filter slot shared by both tabs, but what it filters
-  // on switches with ticketsStatus: Open tickets only ever have the
-  // automated decision (HOLD_FOR_VERIFICATION/ESCALATE - decision),
-  // Resolved tickets are filtered by what the human reviewer actually
-  // chose instead (VERIFIED_RELEASE/RISKY_BLOCK_COD/ESCALATE_MANAGER -
-  // resolution_outcome) - the automated decision no longer being the
-  // interesting question once a human has already acted on it. Reset
-  // on every tab switch (handleStatusTabChange) since a value picked
-  // under one tab's option list means nothing under the other's.
   const [decisionFilter, setDecisionFilter] = useState('');
   const [riskFilter, setRiskFilter] = useState('');
-  const hasActiveFilter = decisionFilter !== '' || riskFilter !== '';
+  // Only meaningful on the Resolved tab (Open tickets have no outcome
+  // yet) - filters resolution_outcome, kept separate from decisionFilter
+  // (which always filters the original automated `decision` field, on
+  // either tab - a resolved ticket still carries its original decision,
+  // and that stays a useful thing to filter by even after resolution).
+  const [outcomeFilter, setOutcomeFilter] = useState('');
+  const hasActiveFilter =
+    decisionFilter !== '' || riskFilter !== '' || (ticketsStatus === 'RESOLVED' && outcomeFilter !== '');
 
   // Guards against out-of-order responses: switching pages quickly (or
   // hitting refresh mid-fetch) could otherwise let a slower, earlier
@@ -275,11 +273,9 @@ export default function TicketsView() {
     // stale form hanging off a ticket no longer even in view.
     setActiveTicketId(null);
     setResolveForm(EMPTY_RESOLVE_FORM);
-    // The Decision filter's option list (and the field it filters on)
-    // changes with the tab - a value picked under one tab's options
-    // means nothing under the other's, so drop it rather than carry a
-    // stale filter across.
-    setDecisionFilter('');
+    // Outcome only applies to Resolved tickets - drop it on every tab
+    // switch so it never carries over as a stale, invisible filter.
+    setOutcomeFilter('');
     setStatusTab(nextStatus);
   }
 
@@ -360,9 +356,9 @@ export default function TicketsView() {
 
   const visibleTickets = tickets.filter(
     (t) =>
-      (decisionFilter === '' ||
-        (ticketsStatus === 'RESOLVED' ? t.resolution_outcome === decisionFilter : t.decision === decisionFilter)) &&
-      (riskFilter === '' || t.risk_level === riskFilter),
+      (decisionFilter === '' || t.decision === decisionFilter) &&
+      (riskFilter === '' || t.risk_level === riskFilter) &&
+      (ticketsStatus !== 'RESOLVED' || outcomeFilter === '' || t.resolution_outcome === outcomeFilter),
   );
 
   return (
@@ -431,7 +427,7 @@ export default function TicketsView() {
           <label className="tickets-view__filter-field">
             <span>Decision</span>
             <select value={decisionFilter} onChange={(event) => setDecisionFilter(event.target.value)}>
-              {(ticketsStatus === 'RESOLVED' ? OUTCOME_FILTERS : DECISION_FILTERS).map((option) => (
+              {DECISION_FILTERS.map((option) => (
                 <option key={option.value || 'all'} value={option.value}>
                   {option.label}
                 </option>
@@ -448,6 +444,18 @@ export default function TicketsView() {
               ))}
             </select>
           </label>
+          {ticketsStatus === 'RESOLVED' && (
+            <label className="tickets-view__filter-field">
+              <span>Outcome</span>
+              <select value={outcomeFilter} onChange={(event) => setOutcomeFilter(event.target.value)}>
+                {OUTCOME_FILTERS.map((option) => (
+                  <option key={option.value || 'all'} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           {hasActiveFilter && (
             <button
               type="button"
@@ -455,6 +463,7 @@ export default function TicketsView() {
               onClick={() => {
                 setDecisionFilter('');
                 setRiskFilter('');
+                setOutcomeFilter('');
               }}
             >
               Clear filters
