@@ -59,14 +59,21 @@
 }
 
 .tickets-view__refresh {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
   border: 1px solid var(--color-border-input);
   background: var(--color-surface);
   color: var(--color-text);
   border-radius: var(--radius-md);
-  padding: 4px 12px;
-  font-size: 0.78rem;
+  padding: 0;
   cursor: pointer;
-  white-space: nowrap;
+}
+
+.tickets-view__refresh:hover:not(:disabled) {
+  background: #f4f5f7;
 }
 
 .tickets-view__refresh:disabled {
@@ -96,6 +103,55 @@
   font-size: 0.78rem;
   cursor: pointer;
   white-space: nowrap;
+}
+
+/* Same visual language as OrderPicker's own scenario filter - a
+   familiar "narrow the list down" control rather than a new pattern. */
+.tickets-view__filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.tickets-view__filter-field {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.tickets-view__filter-field select {
+  padding: 4px 8px;
+  border: 1px solid var(--color-border-input);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.tickets-view__filter-clear {
+  margin-left: auto;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.tickets-view__filter-summary {
+  margin: 0 0 8px;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
 }
 
 .tickets-view__list {
@@ -162,13 +218,24 @@
 }
 
 .tickets-view__resolve-btn {
-  border: 1px solid var(--color-border-input);
-  background: var(--color-surface);
+  /* Solid accent fill, not the same bordered-white treatment as the
+     card it sits on - this is the one action on the row, it needs to
+     read as a button at a glance, not blend into the card surface. */
+  border: 1px solid var(--color-accent);
+  background: var(--color-accent);
+  color: #fff;
+  font-weight: 600;
   border-radius: var(--radius-md);
-  padding: 4px 12px;
+  padding: 5px 14px;
   font-size: 0.8rem;
   cursor: pointer;
   white-space: nowrap;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.tickets-view__resolve-btn:hover {
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
 }
 
 .tickets-view__reason {

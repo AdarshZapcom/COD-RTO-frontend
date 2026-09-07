@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { getInsights } from '../../api/client';
 import { severityColor, formatPercent } from '../../lib/format.js';
-import { BarsIcon } from '../icons/Icon.jsx';
+import { BarsIcon, InfoIcon, CurrencyIcon, RefreshIcon } from '../icons/Icon.jsx';
 import './InsightsStrip.css';
 
 /** 30d-vs-7d rate mini bar chart, scaled to this one card's own two real
@@ -96,9 +96,9 @@ export default function InsightsStrip() {
           className="insights-strip__refresh"
           onClick={() => load({ isRefresh: true })}
           disabled={busy}
-          aria-label="Refresh operational insights"
+          aria-label={refreshing ? 'Refreshing operational insights' : 'Refresh operational insights'}
         >
-          {refreshing ? 'Refreshing…' : 'Refresh'}
+          <RefreshIcon className={refreshing ? 'icon-spin' : undefined} />
         </button>
       </div>
 
@@ -133,64 +133,72 @@ export default function InsightsStrip() {
                 className="insights-strip__card"
                 style={{ borderTopColor: severityColor(insight.severity) }}
               >
-                <div className="insights-strip__card-top">
-                  <span className="insights-strip__severity" style={{ background: severityColor(insight.severity) }}>
-                    {SEVERITY_LABEL[insight.severity] || insight.severity}
-                  </span>
-                  <span className="insights-strip__route">
-                    {insight.courier_id} · {insight.pincode}
-                  </span>
-                </div>
-
-                <div className="insights-strip__rates">
-                  <svg
-                    className="insights-strip__bars"
-                    width="28"
-                    height="24"
-                    viewBox="0 0 28 24"
-                    aria-hidden="true"
-                    focusable="false"
-                  >
-                    <rect
-                      x="0"
-                      y={24 - h30}
-                      width="10"
-                      height={h30}
-                      rx="2"
-                      style={{ fill: 'var(--color-border-input)' }}
-                    />
-                    <rect
-                      x="14"
-                      y={24 - h7}
-                      width="10"
-                      height={h7}
-                      rx="2"
-                      style={{ fill: severityColor(insight.severity) }}
-                    />
-                  </svg>
-                  <span>7d {formatPercent(insight.rto_rate_7d)}</span>
-                  <span>30d {formatPercent(insight.rto_rate_30d)}</span>
-                  {!isLowSample && (
-                    <span className={`insights-strip__delta is-${deltaSign}`}>
-                      {deltaArrow} {formatPercent(Math.abs(insight.delta))}
+                <div className="insights-strip__body">
+                  <div className="insights-strip__card-top">
+                    <span className="insights-strip__severity" style={{ background: severityColor(insight.severity) }}>
+                      {SEVERITY_LABEL[insight.severity] || insight.severity}
                     </span>
+                    <span className="insights-strip__route">
+                      {insight.courier_id} · {insight.pincode}
+                    </span>
+                  </div>
+
+                  <div className="insights-strip__rates">
+                    <svg
+                      className="insights-strip__bars"
+                      width="28"
+                      height="24"
+                      viewBox="0 0 28 24"
+                      aria-hidden="true"
+                      focusable="false"
+                    >
+                      <rect
+                        x="0"
+                        y={24 - h30}
+                        width="10"
+                        height={h30}
+                        rx="2"
+                        style={{ fill: 'var(--color-border-input)' }}
+                      />
+                      <rect
+                        x="14"
+                        y={24 - h7}
+                        width="10"
+                        height={h7}
+                        rx="2"
+                        style={{ fill: severityColor(insight.severity) }}
+                      />
+                    </svg>
+                    <span>7d {formatPercent(insight.rto_rate_7d)}</span>
+                    <span>30d {formatPercent(insight.rto_rate_30d)}</span>
+                    {!isLowSample && (
+                      <span className={`insights-strip__delta is-${deltaSign}`}>
+                        {deltaArrow} {formatPercent(Math.abs(insight.delta))}
+                      </span>
+                    )}
+                  </div>
+
+                  <p className="insights-strip__sample">
+                    Based on {insight.sample_size} past order{insight.sample_size === 1 ? '' : 's'}
+                    {isLowSample && ' - too small to trust the rate above'}
+                  </p>
+
+                  {insight.possible_cause && (
+                    <p className="insights-strip__callout insights-strip__cause">
+                      <InfoIcon />
+                      <span>Possible cause: {insight.possible_cause}</span>
+                    </p>
+                  )}
+
+                  <p className="insights-strip__action">{insight.recommended_action}</p>
+
+                  {insight.estimated_impact && (
+                    <p className="insights-strip__callout insights-strip__impact">
+                      <CurrencyIcon />
+                      <span>{insight.estimated_impact}</span>
+                    </p>
                   )}
                 </div>
-
-                <p className="insights-strip__sample">
-                  Based on {insight.sample_size} past order{insight.sample_size === 1 ? '' : 's'}
-                  {isLowSample && ' - too small to trust the rate above'}
-                </p>
-
-                {insight.possible_cause && (
-                  <p className="insights-strip__cause">Possible cause: {insight.possible_cause}</p>
-                )}
-
-                <p className="insights-strip__action">{insight.recommended_action}</p>
-
-                {insight.estimated_impact && (
-                  <p className="insights-strip__impact">{insight.estimated_impact}</p>
-                )}
               </li>
             );
           })}

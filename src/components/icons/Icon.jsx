@@ -193,6 +193,24 @@ export function InfoIcon(props) {
   );
 }
 
+export function RefreshIcon(props) {
+  return (
+    <svg width={14} height={14} {...base} {...props}>
+      <path d="M20 11a8 8 0 1 0-2.3 5.7" />
+      <path d="M20 5v6h-6" />
+    </svg>
+  );
+}
+
+export function CurrencyIcon(props) {
+  return (
+    <svg width={13} height={13} {...base} {...props}>
+      <path d="M12 2v20" />
+      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H7" />
+    </svg>
+  );
+}
+
 export function ArrowRightIcon(props) {
   return (
     <svg width={14} height={14} {...base} {...props}>

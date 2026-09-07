@@ -11,14 +11,21 @@
 }
 
 .insights-strip__refresh {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
   border: 1px solid var(--color-border-input);
   background: var(--color-surface);
   color: var(--color-text);
   border-radius: var(--radius-md);
-  padding: 4px 12px;
-  font-size: 0.78rem;
+  padding: 0;
   cursor: pointer;
-  white-space: nowrap;
+}
+
+.insights-strip__refresh:hover:not(:disabled) {
+  background: #f4f5f7;
 }
 
 .insights-strip__refresh:disabled {
@@ -51,25 +58,37 @@
 }
 
 .insights-strip__list {
-  display: flex;
+  /* A responsive grid, not a fixed-width horizontal-scroll strip: with
+     only a handful of insights the old flex/scroll layout left a big
+     block of unused width in the panel once the fixed-260px cards ran
+     out. Cards grow to fill the row's full width evenly and wrap to
+     another row instead of needing a scrollbar once there are enough
+     of them. Row height stays uniform (grid default, align-items:
+     stretch) - see .insights-strip__card / __body below for how a
+     shorter card's leftover height is handled without it reading as a
+     mistake. */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: var(--space-md);
-  overflow-x: auto;
   margin: 0;
   padding: 4px 4px 8px;
   list-style: none;
 }
 
 .insights-strip__card {
-  flex: 0 0 auto;
-  width: 260px;
-  background: var(--color-surface);
+  /* The uniform-height "shell" for the row. Its own background is an
+     flat light-gray fill (distinct from the white content card and
+     from the page's own background) so a short card's leftover stretch
+     height reads as a deliberate, labeled empty area - not a forgotten
+     blank spot - while .insights-strip__body (the real content) sits
+     on top of it as its own naturally-sized white card. */
+  background: var(--color-bg);
   border: 1px solid #d4d9e0;
   border-top: 4px solid var(--color-border);
   border-radius: 10px;
-  padding: var(--space-sm) var(--space-md);
+  padding: var(--space-sm);
   display: flex;
   flex-direction: column;
-  gap: 6px;
   box-shadow: 0 2px 6px rgba(16, 24, 40, 0.09), 0 1px 2px rgba(16, 24, 40, 0.06);
   transition: box-shadow 0.16s ease, transform 0.16s ease;
 }
@@ -77,6 +96,19 @@
 .insights-strip__card:hover {
   box-shadow: 0 8px 20px rgba(16, 24, 40, 0.12), 0 2px 6px rgba(16, 24, 40, 0.07);
   transform: translateY(-1px);
+}
+
+/* The real, naturally-sized content card, floating at the top of the
+   shell above - never stretched, never taller than its own content. */
+.insights-strip__body {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.08);
 }
 
 .insights-strip__card-top {
@@ -137,12 +169,28 @@
   color: var(--color-text-muted);
 }
 
-.insights-strip__cause {
+.insights-strip__callout {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
   margin: 0;
-  font-size: 0.82rem;
+  padding: 8px 10px;
+  border-radius: 7px;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.insights-strip__callout svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.insights-strip__cause {
+  background: var(--color-bg);
   color: var(--color-text-muted);
   font-style: italic;
 }
+
 
 .insights-strip__action {
   margin: 0;
@@ -151,16 +199,7 @@
 }
 
 .insights-strip__impact {
-  margin: 2px 0 0;
-  padding-top: 6px;
-  border-top: 1px dashed var(--color-border);
-  font-size: 0.82rem;
-  font-weight: 700;
+  background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
   color: var(--color-accent);
-}
-
-@media (max-width: 480px) {
-  .insights-strip__card {
-    width: 220px;
-  }
+  font-weight: 700;
 }

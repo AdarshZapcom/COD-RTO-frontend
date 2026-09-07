@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { getTickets, resolveTicket } from '../../api/client';
 import { decisionColor, riskColor, formatDecision, splitUncertaintyFlags } from '../../lib/format.js';
 import { windowedPageNumbers } from '../../lib/pagination.js';
-import { TicketIcon } from '../icons/Icon.jsx';
+import { TicketIcon, RefreshIcon } from '../icons/Icon.jsx';
 import './TicketsView.css';
 
 /** Raw ticket rows join these as " | "-strings, not arrays like
@@ -18,6 +18,25 @@ function formatTimestamp(value) {
 }
 
 const EMPTY_RESOLVE_FORM = { resolvedBy: '', resolutionNote: '' };
+
+// Client-side declutter filters over the currently-loaded page of
+// tickets - not a new backend query param (GET /tickets has no
+// decision/risk_level filter today), so these only narrow down what's
+// already on screen, same as any other page-local UI state. Good
+// enough for "find the ESCALATE ticket among these 7" without a
+// backend contract change; a filter that must reach across pages would
+// need real server-side support instead.
+const DECISION_FILTERS = [
+  { value: '', label: 'All' },
+  { value: 'HOLD_FOR_VERIFICATION', label: 'Hold for verification' },
+  { value: 'ESCALATE', label: 'Escalate' },
+];
+const RISK_FILTERS = [
+  { value: '', label: 'All' },
+  { value: 'LOW', label: 'Low' },
+  { value: 'MEDIUM', label: 'Medium' },
+  { value: 'HIGH', label: 'High' },
+];
 
 // A live event/stress-test run can accumulate hundreds of ad hoc
 // tickets, so this view needs real numbered pagination against the
@@ -53,6 +72,10 @@ export default function TicketsView() {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  const [decisionFilter, setDecisionFilter] = useState('');
+  const [riskFilter, setRiskFilter] = useState('');
+  const hasActiveFilter = decisionFilter !== '' || riskFilter !== '';
 
   // Guards against out-of-order responses: switching pages quickly (or
   // hitting refresh mid-fetch) could otherwise let a slower, earlier
@@ -212,6 +235,12 @@ export default function TicketsView() {
 
   const canConfirm = resolveForm.resolvedBy.trim() !== '' && resolveForm.resolutionNote.trim() !== '';
 
+  const visibleTickets = tickets.filter(
+    (t) =>
+      (decisionFilter === '' || t.decision === decisionFilter) &&
+      (riskFilter === '' || t.risk_level === riskFilter),
+  );
+
   return (
     <div className="panel tickets-view">
       <div aria-live="polite" className="visually-hidden">
@@ -229,9 +258,9 @@ export default function TicketsView() {
           className="tickets-view__refresh"
           onClick={() => loadTickets({ isRefresh: true })}
           disabled={listLoading || refreshing}
-          aria-label="Refresh open tickets"
+          aria-label={refreshing ? 'Refreshing open tickets' : 'Refresh open tickets'}
         >
-          {refreshing ? 'Refreshing…' : 'Refresh'}
+          <RefreshIcon className={refreshing ? 'icon-spin' : undefined} />
         </button>
       </div>
 
@@ -253,8 +282,55 @@ export default function TicketsView() {
       </div>
 
       {!listLoading && !listError && tickets.length > 0 && (
+        <div className="tickets-view__filter-bar">
+          <label className="tickets-view__filter-field">
+            <span>Decision</span>
+            <select value={decisionFilter} onChange={(event) => setDecisionFilter(event.target.value)}>
+              {DECISION_FILTERS.map((option) => (
+                <option key={option.value || 'all'} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="tickets-view__filter-field">
+            <span>Risk</span>
+            <select value={riskFilter} onChange={(event) => setRiskFilter(event.target.value)}>
+              {RISK_FILTERS.map((option) => (
+                <option key={option.value || 'all'} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          {hasActiveFilter && (
+            <button
+              type="button"
+              className="tickets-view__filter-clear"
+              onClick={() => {
+                setDecisionFilter('');
+                setRiskFilter('');
+              }}
+            >
+              Clear filters
+            </button>
+          )}
+        </div>
+      )}
+
+      {!listLoading && !listError && tickets.length > 0 && visibleTickets.length === 0 && (
+        <p className="empty-state">No tickets on this page match the current filters.</p>
+      )}
+
+      {!listLoading && !listError && visibleTickets.length > 0 && hasActiveFilter && (
+        <p className="tickets-view__filter-summary">
+          {visibleTickets.length} of {tickets.length} on this page shown
+        </p>
+      )}
+
+      {!listLoading && !listError && visibleTickets.length > 0 && (
         <ul className="tickets-view__list" aria-busy={refreshing}>
-          {tickets.map((ticket) => {
+          {visibleTickets.map((ticket) => {
             const isActive = activeTicketId === ticket.ticket_id;
             const isResolving = resolvingId === ticket.ticket_id;
             const rowError = resolveErrors[ticket.ticket_id];

@@ -316,6 +316,26 @@ body {
   }
 }
 
+/* Shared "in progress" icon spin - used by every Refresh button
+   (InsightsStrip, TicketsView) so the icon rotates in place instead of
+   the button's label text changing length ("Refresh" -> "Refreshing…")
+   and shifting whatever sits next to it. Respects reduced-motion. */
+@keyframes icon-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.icon-spin {
+  animation: icon-spin 0.8s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .icon-spin {
+    animation: none;
+  }
+}
+
 /* Screen-reader-only content (e.g. transient aria-live announcements
    that shouldn't take up visible layout space). */
 .visually-hidden {
