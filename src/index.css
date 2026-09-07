@@ -2,12 +2,12 @@
   color-scheme: light;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 
-  /* Design tokens (base scaffold — src/index.css).
+  /* Design tokens (base scaffold - src/index.css).
      Static, class-selectable colors (e.g. NarrativePanel's
      llm/template_fallback badges) should reference these instead of
      hardcoding hex values. Colors keyed by a *runtime* enum value
      (decision, risk_level, severity) are intentionally NOT re-derived
-     from these vars at the CSS layer — src/lib/format.js's
+     from these vars at the CSS layer - src/lib/format.js's
      decisionColor()/riskColor()/severityColor() already centralize that
      mapping as the single source of truth (frozen, shared across
      component groups); the values below are kept numerically identical
@@ -21,11 +21,11 @@
   --color-accent: #0f74b8;
   --color-accent-hover: #1f8ad0;
 
-  /* "Chrome" tokens — the dark header bar only (brand match for the Quess
+  /* "Chrome" tokens - the dark header bar only (brand match for the Quess
      hackathon: Quess's own nav bar is a neutral dark charcoal gray, not
-     navy — no blue hue in it at all, the blue is reserved for the accent).
+     navy - no blue hue in it at all, the blue is reserved for the accent).
      Every .panel card intentionally keeps the light tokens above for
-     data legibility — this is a re-theme of the header, not a full dark
+     data legibility - this is a re-theme of the header, not a full dark
      mode, so --color-bg itself stays untouched (it also doubles as the
      nested-row fill inside white panels, e.g. TicketsView/InsightsStrip
      cards, which must not turn dark). */
@@ -35,7 +35,7 @@
   --color-chrome-text: #f5f7fa;
   --color-chrome-text-muted: #9a9da3;
 
-  /* Semantic status colors — success/positive (RELEASE, LOW risk),
+  /* Semantic status colors - success/positive (RELEASE, LOW risk),
      warning/caution (HOLD_FOR_VERIFICATION, MEDIUM risk), danger/critical
      (ESCALATE, HIGH risk), neutral (unknown/default), each as a text
      color plus a matching soft background for pill/badge treatments. */
@@ -59,7 +59,7 @@
 }
 
 /* Global, consistent keyboard-focus treatment for every interactive
-   control across all components — hoisted here rather than left to
+   control across all components - hoisted here rather than left to
    each component to redefine, so no future component is silently
    missed (previously only 2 of 10 components defined this locally). */
 button:focus-visible,
@@ -74,7 +74,7 @@ a:focus-visible {
 body {
   margin: 0;
   /* Quess's own site is a dark nav bar over a light content canvas, not a
-     fully dark page — only .app-header below gets the dark chrome
+     fully dark page - only .app-header below gets the dark chrome
      treatment; the canvas stays light so cards/text need no rework. */
   background: linear-gradient(160deg, #f4f8fc 0%, #e8eef7 100%);
   color: var(--color-text);
@@ -91,7 +91,7 @@ body {
   gap: 16px;
 }
 
-/* The one dark "chrome" surface in the app — a nav-bar strip, styled to
+/* The one dark "chrome" surface in the app - a nav-bar strip, styled to
    match Quess's own dark header band; everything below it is the light
    canvas + light panel cards. */
 .app-header {
@@ -113,11 +113,11 @@ body {
   color: var(--color-chrome-text);
 }
 
-/* Investigate / Ops & tickets — plain local state, not a route (see
+/* Investigate / Ops & tickets - plain local state, not a route (see
    App.jsx MODE_TABS); a pill-style segmented control so it reads as a
    view switch, distinct from the underline-style InvestigationTabs
    below the decision banner. Styled as a dark "housing" with the active
-   tab rendered as a solid accent pill — the same treatment as Quess's
+   tab rendered as a solid accent pill - the same treatment as Quess's
    own CTA button. */
 .mode-switcher {
   display: inline-flex;
@@ -152,7 +152,7 @@ body {
 
 /* Investigate mode: a fixed-width rail (order input) beside a main
    column that owns exactly one always-visible element (DecisionBanner)
-   plus one internally-scrolling region (InvestigationTabs) — the two-
+   plus one internally-scrolling region (InvestigationTabs) - the two-
    region split is what keeps the decision glanceable without scrolling
    the whole page to reach it. */
 .app-body {
@@ -229,7 +229,7 @@ body {
 }
 
 /* Below this width the fixed-width rail crowds the main column too
-   much — stack them instead, same fallback spirit as the narrower
+   much - stack them instead, same fallback spirit as the narrower
    breakpoints already used inside individual panels. */
 @media (max-width: 860px) {
   .app-body {

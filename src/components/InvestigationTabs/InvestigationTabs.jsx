@@ -15,8 +15,8 @@ const TABS = [
  * PrecedentPanel/NarrativePanel column with 2 tabs, so only one pair is
  * on screen at a time. DecisionBanner stays a sibling above this
  * component in App.jsx, never inside a tab. (A third "Timing" tab was
- * removed per team review - pipeline latency isn't part of the
- * investigation a reviewer needs to see.)
+ * removed per team review - pipeline latency is an internal-debugging
+ * detail, not part of the investigation a reviewer needs to see.)
  *
  * @param {{ investigation: import('../../types').InvestigationReport }} props
  */
@@ -39,7 +39,7 @@ export default function InvestigationTabs({ investigation }) {
 
   // Roving-tabindex arrow nav: only the active tab is Tab-reachable
   // (tabIndex 0), so moving the "selected" tab via arrow keys must also
-  // move actual DOM focus there — changing tabIndex alone does not pull
+  // move actual DOM focus there - changing tabIndex alone does not pull
   // focus off the previously-focused button.
   function focusTab(key) {
     setActiveTab(key);

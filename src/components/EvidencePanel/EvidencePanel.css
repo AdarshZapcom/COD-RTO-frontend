@@ -42,7 +42,7 @@
   line-height: 1.4;
 }
 
-/* Critical tier: solid danger treatment — the flags most likely to
+/* Critical tier: solid danger treatment - the flags most likely to
    mean "do not trust this decision without a human." */
 .evidence-panel__flags--critical li {
   background: var(--color-danger-bg);
@@ -51,7 +51,7 @@
 }
 
 /* Warning tier: softer, still visible but clearly a step down from
-   critical (thin sample / no precedent — worth knowing, not alarming). */
+   critical (thin sample / no precedent - worth knowing, not alarming). */
 .evidence-panel__flags--warning li {
   background: var(--color-warning-bg);
   color: var(--color-warning-text);

@@ -40,7 +40,7 @@
 }
 
 /* Panels can end up narrow once the outer investigation-grid drops to
-   a single column on small viewports — stack the two evidence columns
+   a single column on small viewports - stack the two evidence columns
    there instead of squeezing them side by side. */
 @media (max-width: 480px) {
   .evidence-comparison__columns {
