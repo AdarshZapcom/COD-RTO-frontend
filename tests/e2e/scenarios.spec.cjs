@@ -112,32 +112,22 @@ async function fillByLabel(page, labelText, value) {
   await page.fill(`[id="${forId}"]`, value);
 }
 
-async function selectByLabel(page, labelText, value) {
-  const label = adhocForm(page).locator('label', { hasText: labelText }).first();
-  const forId = await label.getAttribute('for');
-  assert(forId, `no label found for "${labelText}"`);
-  await page.selectOption(`[id="${forId}"]`, value);
-}
-
 /**
  * Fills and submits the ad-hoc form, waiting for the resulting
  * POST /investigate response. Returns the response status.
- * `opts.addressVerified` / `opts.isFirstOrder`: 'true' | 'false' | undefined
- * (undefined leaves the advanced dropdown at "Unspecified").
+ *
+ * The form only collects customer_id/pincode/courier_id/order_value -
+ * the "Advanced fields" (is_first_order/address_verified) were removed
+ * from this UI (a deliberate product decision, kept as-is per team
+ * direction); that override capability is still real on the backend
+ * (analytics.apply_order_overrides) and is exercised directly against
+ * the API instead - see [B9] below.
  */
-async function submitAdHoc(page, { customerId, pincode, courierId, orderValue, addressVerified, isFirstOrder }) {
+async function submitAdHoc(page, { customerId, pincode, courierId, orderValue }) {
   await fillByLabel(page, 'Customer ID', customerId);
   await fillByLabel(page, 'Pincode', pincode);
   await fillByLabel(page, 'Courier ID', courierId);
   await fillByLabel(page, 'Order value', String(orderValue));
-
-  if (addressVerified !== undefined || isFirstOrder !== undefined) {
-    const details = adhocForm(page).locator('details.adhoc-form__advanced');
-    const isOpen = await details.evaluate((el) => el.open);
-    if (!isOpen) await adhocForm(page).locator('summary').click();
-  }
-  if (addressVerified !== undefined) await selectByLabel(page, 'Address verified?', addressVerified);
-  if (isFirstOrder !== undefined) await selectByLabel(page, 'First order?', isFirstOrder);
 
   const responsePromise = page.waitForResponse(
     (res) => res.url().includes('/investigate') && res.request().method() === 'POST',
@@ -147,10 +137,6 @@ async function submitAdHoc(page, { customerId, pincode, courierId, orderValue, a
   const response = await responsePromise;
   await page.locator('.decision-banner').waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
   return response.status();
-}
-
-async function resetForm(page) {
-  await adhocForm(page).locator('button:has-text("Reset")').click();
 }
 
 // ------------------------------------------------------------------
@@ -183,17 +169,20 @@ async function postResolveTicket(ticketId) {
 // Section A — core decision scenarios (dataset orders)
 // ------------------------------------------------------------------
 
+// Expected values are the *humanized* labels DecisionBanner now renders
+// (lib/format.js formatDecision()) - "RELEASE" -> "Release", etc. - not
+// the raw backend enum, which is no longer what's on screen.
 const CORE_SCENARIOS = [
-  { id: 'A1', orderId: 'ORD-10000', expected: 'RELEASE' },
-  { id: 'A2', orderId: 'ORD-10001', expected: 'HOLD_FOR_VERIFICATION' },
-  { id: 'A3', orderId: 'ORD-10002', expected: 'HOLD_FOR_VERIFICATION' },
-  { id: 'A4', orderId: 'ORD-10003', expected: 'HOLD_FOR_VERIFICATION' },
-  { id: 'A5', orderId: 'ORD-10004', expected: 'ESCALATE' },
-  { id: 'A6', orderId: 'ORD-10005', expected: 'HOLD_FOR_VERIFICATION' },
-  { id: 'A7', orderId: 'ORD-10006', expected: 'ESCALATE' },
-  { id: 'A8', orderId: 'ORD-10007', expected: 'HOLD_FOR_VERIFICATION' },
-  { id: 'A9', orderId: 'ORD-10008', expected: 'HOLD_FOR_VERIFICATION' },
-  { id: 'A10', orderId: 'ORD-10009', expected: 'ESCALATE' },
+  { id: 'A1', orderId: 'ORD-10000', expected: 'Release' },
+  { id: 'A2', orderId: 'ORD-10001', expected: 'Hold for verification' },
+  { id: 'A3', orderId: 'ORD-10002', expected: 'Hold for verification' },
+  { id: 'A4', orderId: 'ORD-10003', expected: 'Hold for verification' },
+  { id: 'A5', orderId: 'ORD-10004', expected: 'Escalate' },
+  { id: 'A6', orderId: 'ORD-10005', expected: 'Hold for verification' },
+  { id: 'A7', orderId: 'ORD-10006', expected: 'Escalate' },
+  { id: 'A8', orderId: 'ORD-10007', expected: 'Hold for verification' },
+  { id: 'A9', orderId: 'ORD-10008', expected: 'Hold for verification' },
+  { id: 'A10', orderId: 'ORD-10009', expected: 'Escalate' },
 ];
 
 // ------------------------------------------------------------------
@@ -333,27 +322,30 @@ async function main() {
   });
 
   // --- B9: ad-hoc address_verified override actually changes evidence ---
-  await test('[B9] CUST-005 with address_verified=No omits "Address is verified"', async () => {
-    const page = await freshPage();
-    try {
-      await submitAdHoc(page, {
-        customerId: 'CUST-005', pincode: '560009', courierId: 'C02', orderValue: 399, addressVerified: 'false',
-      });
-      const counter = await counterEvidenceItems(page);
-      assert(!counter.some((t) => /address is verified/i.test(t)), 'override had no effect - "Address is verified" still present');
-    } finally {
-      await page.close();
-    }
+  // The "Advanced fields" UI that used to expose this was deliberately
+  // removed (product decision, kept as-is per team direction) - the
+  // override capability itself is still real on the backend
+  // (analytics.apply_order_overrides), so it's exercised directly
+  // against POST /investigate instead of through the form.
+  await test('[B9 - API] CUST-005 with address_verified=false omits "Address is verified"', async () => {
+    const { status, json } = await postInvestigateRaw(
+      '{"customer_id":"CUST-005","pincode":"560009","courier_id":"C02","order_value":399,"address_verified":false}',
+    );
+    assertEqual(status, 200, 'status');
+    assert(
+      !json.counter_evidence.some((t) => /address is verified/i.test(t)),
+      `override had no effect - "Address is verified" still present: ${JSON.stringify(json.counter_evidence)}`,
+    );
   });
-  await test('[B9] CUST-005 with address_verified unspecified DOES show "Address is verified"', async () => {
-    const page = await freshPage();
-    try {
-      await submitAdHoc(page, { customerId: 'CUST-005', pincode: '560009', courierId: 'C02', orderValue: 399 });
-      const counter = await counterEvidenceItems(page);
-      assert(counter.some((t) => /address is verified/i.test(t)), 'expected "Address is verified" with no override');
-    } finally {
-      await page.close();
-    }
+  await test('[B9 - API] CUST-005 with address_verified omitted DOES show "Address is verified"', async () => {
+    const { status, json } = await postInvestigateRaw(
+      '{"customer_id":"CUST-005","pincode":"560009","courier_id":"C02","order_value":399}',
+    );
+    assertEqual(status, 200, 'status');
+    assert(
+      json.counter_evidence.some((t) => /address is verified/i.test(t)),
+      `expected "Address is verified" with no override: ${JSON.stringify(json.counter_evidence)}`,
+    );
   });
 
   // --- B10: double-click submits exactly once ---
