@@ -122,10 +122,33 @@ body {
   color: var(--color-accent);
 }
 
+.app-header__brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
 .app-header h1 {
   font-size: 1.25rem;
+  font-weight: 800;
   margin: 0;
+  line-height: 1.1;
   color: var(--color-chrome-text);
+}
+
+/* The "Q" in the SignallQ wordmark is always the brand's accent blue,
+   matching the logo artwork - kept as var(--color-accent) rather than a
+   hardcoded hex so it stays in lockstep if the accent color ever
+   changes (see index.css's design-tokens comment at the top). */
+.app-header__brand-accent {
+  color: var(--color-accent);
+}
+
+.app-header__tagline {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--color-chrome-text-muted);
 }
 
 /* Investigate / Ops & tickets - plain local state, not a route (see
