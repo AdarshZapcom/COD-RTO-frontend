@@ -1,3 +1,4 @@
+import { HistoryIcon } from '../icons/Icon.jsx';
 import './PrecedentPanel.css';
 
 /**
@@ -33,8 +34,13 @@ import './PrecedentPanel.css';
 export default function PrecedentPanel({ investigation }) {
   if (!investigation) {
     return (
-      <div className="panel precedent-panel">
-        <h2>Precedent cases</h2>
+      <div className="tab-section precedent-panel">
+        <h2 className="panel-title">
+          <span className="panel-title__icon">
+            <HistoryIcon />
+          </span>
+          Precedent cases
+        </h2>
         <p className="empty-state">No investigation loaded.</p>
       </div>
     );
@@ -45,8 +51,13 @@ export default function PrecedentPanel({ investigation }) {
   const mostRelevantMissing = Boolean(mostRelevant) && !caseIds.includes(mostRelevant);
 
   return (
-    <div className="panel precedent-panel">
-      <h2>Precedent cases</h2>
+    <div className="tab-section precedent-panel">
+      <h2 className="panel-title">
+        <span className="panel-title__icon">
+          <HistoryIcon />
+        </span>
+        Precedent cases
+      </h2>
 
       {caseIds.length === 0 ? (
         <p className="empty-state">No precedent cases retrieved.</p>

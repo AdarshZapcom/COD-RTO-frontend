@@ -3,6 +3,7 @@ import EvidencePanel from '../EvidencePanel/EvidencePanel.jsx';
 import EvidenceComparison from '../EvidenceComparison/EvidenceComparison.jsx';
 import PrecedentPanel from '../PrecedentPanel/PrecedentPanel.jsx';
 import NarrativePanel from '../NarrativePanel/NarrativePanel.jsx';
+import { LayersIcon, HistoryIcon } from '../icons/Icon.jsx';
 import './InvestigationTabs.css';
 
 const TABS = [
@@ -56,8 +57,10 @@ export default function InvestigationTabs({ investigation }) {
     else if (event.key === 'End') focusTab(TABS[TABS.length - 1].key);
   }
 
+  const TAB_ICONS = { evidence: LayersIcon, precedent: HistoryIcon };
+
   return (
-    <div className="investigation-tabs">
+    <div className="panel investigation-tabs">
       <div
         className="investigation-tabs__list"
         role="tablist"
@@ -66,6 +69,7 @@ export default function InvestigationTabs({ investigation }) {
       >
         {TABS.map((tab) => {
           const isActive = tab.key === activeTab;
+          const TabIcon = TAB_ICONS[tab.key];
           return (
             <button
               key={tab.key}
@@ -81,6 +85,7 @@ export default function InvestigationTabs({ investigation }) {
               className={isActive ? 'investigation-tabs__tab is-active' : 'investigation-tabs__tab'}
               onClick={() => setActiveTab(tab.key)}
             >
+              <TabIcon />
               {tab.label}
             </button>
           );

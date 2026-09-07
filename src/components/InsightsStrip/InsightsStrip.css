@@ -62,14 +62,21 @@
 .insights-strip__card {
   flex: 0 0 auto;
   width: 260px;
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-top: 3px solid var(--color-border);
-  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  border: 1px solid #d4d9e0;
+  border-top: 4px solid var(--color-border);
+  border-radius: 10px;
   padding: var(--space-sm) var(--space-md);
   display: flex;
   flex-direction: column;
   gap: 6px;
+  box-shadow: 0 2px 6px rgba(16, 24, 40, 0.09), 0 1px 2px rgba(16, 24, 40, 0.06);
+  transition: box-shadow 0.16s ease, transform 0.16s ease;
+}
+
+.insights-strip__card:hover {
+  box-shadow: 0 8px 20px rgba(16, 24, 40, 0.12), 0 2px 6px rgba(16, 24, 40, 0.07);
+  transform: translateY(-1px);
 }
 
 .insights-strip__card-top {
@@ -97,10 +104,15 @@
 
 .insights-strip__rates {
   display: flex;
+  align-items: center;
   gap: 10px;
   flex-wrap: wrap;
   font-size: 0.82rem;
   color: var(--color-text-muted);
+}
+
+.insights-strip__bars {
+  flex-shrink: 0;
 }
 
 .insights-strip__delta {

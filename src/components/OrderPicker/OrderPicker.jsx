@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { getOrders } from '../../api/client';
 import { formatScenario, describeScenario } from '../../lib/format.js';
 import { windowedPageNumbers } from '../../lib/pagination.js';
+import { ListIcon } from '../icons/Icon.jsx';
 import './OrderPicker.css';
 
 // Real numbered pagination against GET /orders' limit/offset + its
@@ -113,7 +114,12 @@ export default function OrderPicker({ onSelectOrder, selectedOrderId }) {
   return (
     <div className="panel order-picker">
       <div className="order-picker__header">
-        <h2>Orders</h2>
+        <h2 className="panel-title">
+          <span className="panel-title__icon">
+            <ListIcon />
+          </span>
+          Orders
+        </h2>
         <label className="order-picker__filter">
           <span>Scenario</span>
           <select

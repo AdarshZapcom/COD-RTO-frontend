@@ -1,3 +1,4 @@
+import { ScaleIcon, CheckIcon, XIcon } from '../icons/Icon.jsx';
 import './EvidenceComparison.css';
 
 /**
@@ -20,8 +21,13 @@ import './EvidenceComparison.css';
 export default function EvidenceComparison({ investigation }) {
   if (!investigation) {
     return (
-      <div className="panel evidence-comparison">
-        <h2>Supporting vs. counter-evidence</h2>
+      <div className="tab-section evidence-comparison">
+        <h2 className="panel-title">
+          <span className="panel-title__icon">
+            <ScaleIcon />
+          </span>
+          Supporting vs. counter-evidence
+        </h2>
         <p className="empty-state">No investigation selected yet.</p>
       </div>
     );
@@ -30,8 +36,13 @@ export default function EvidenceComparison({ investigation }) {
   const { supporting_evidence: supporting = [], counter_evidence: counter = [] } = investigation;
 
   return (
-    <div className="panel evidence-comparison">
-      <h2>Supporting vs. counter-evidence</h2>
+    <div className="tab-section evidence-comparison">
+      <h2 className="panel-title">
+        <span className="panel-title__icon">
+          <ScaleIcon />
+        </span>
+        Supporting vs. counter-evidence
+      </h2>
       <div className="evidence-comparison__columns">
         <div className="evidence-comparison__column evidence-comparison__column--supporting">
           <h3>Supporting ({supporting.length})</h3>
@@ -40,7 +51,10 @@ export default function EvidenceComparison({ investigation }) {
           ) : (
             <ul>
               {supporting.map((item) => (
-                <li key={item}>{item}</li>
+                <li key={item}>
+                  <CheckIcon />
+                  <span>{item}</span>
+                </li>
               ))}
             </ul>
           )}
@@ -52,7 +66,10 @@ export default function EvidenceComparison({ investigation }) {
           ) : (
             <ul>
               {counter.map((item) => (
-                <li key={item}>{item}</li>
+                <li key={item}>
+                  <XIcon />
+                  <span>{item}</span>
+                </li>
               ))}
             </ul>
           )}

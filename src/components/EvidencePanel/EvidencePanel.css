@@ -1,11 +1,19 @@
 .evidence-panel__advisory {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
   background: var(--color-warning-bg);
   border: 1px solid var(--color-warning-text);
   border-radius: var(--radius-md);
-  padding: 6px 10px;
+  padding: 8px 10px;
   font-size: 0.85rem;
   color: var(--color-warning-text);
   margin: 0 0 12px;
+}
+
+.evidence-panel__advisory svg {
+  flex-shrink: 0;
+  margin-top: 2px;
 }
 
 .evidence-panel__tier + .evidence-panel__tier {
@@ -30,30 +38,46 @@
   margin: 0;
   padding: 0;
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .evidence-panel__flags li {
-  border-radius: var(--radius-pill);
-  padding: 3px 10px;
-  font-size: 0.78rem;
-  font-weight: 600;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.84rem;
+  font-weight: 500;
   line-height: 1.4;
+}
+
+.evidence-panel__flags li svg {
+  flex-shrink: 0;
+  margin-top: 1px;
 }
 
 /* Critical tier: solid danger treatment - the flags most likely to
    mean "do not trust this decision without a human." */
 .evidence-panel__flags--critical li {
   background: var(--color-danger-bg);
-  color: var(--color-danger-text);
+  color: var(--color-text);
   border: 1px solid var(--color-danger-border);
+}
+
+.evidence-panel__flags--critical li svg {
+  color: var(--color-danger-text);
 }
 
 /* Warning tier: softer, still visible but clearly a step down from
    critical (thin sample / no precedent - worth knowing, not alarming). */
 .evidence-panel__flags--warning li {
   background: var(--color-warning-bg);
-  color: var(--color-warning-text);
+  color: var(--color-text);
   border: 1px solid var(--color-warning-text);
+}
+
+.evidence-panel__flags--warning li svg {
+  color: var(--color-warning-text);
 }

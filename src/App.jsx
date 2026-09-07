@@ -7,6 +7,7 @@ import DecisionBanner from './components/DecisionBanner/DecisionBanner.jsx';
 import InvestigationTabs from './components/InvestigationTabs/InvestigationTabs.jsx';
 import InsightsStrip from './components/InsightsStrip/InsightsStrip.jsx';
 import TicketsView from './components/TicketsView/TicketsView.jsx';
+import { SearchIcon, TicketIcon } from './components/icons/Icon.jsx';
 
 // Investigate = pick/submit one order and see its decision. Ops & tickets =
 // courier x pincode monitoring and open escalations, independent of any
@@ -14,8 +15,8 @@ import TicketsView from './components/TicketsView/TicketsView.jsx';
 // touches the URL or unmounts/loses either screen's own fetched data for
 // longer than a normal remount (both re-fetch cheaply on their own).
 const MODE_TABS = [
-  { key: 'investigate', label: 'Investigate' },
-  { key: 'operations', label: 'Ops & tickets' },
+  { key: 'investigate', label: 'Investigate', Icon: SearchIcon },
+  { key: 'operations', label: 'Ops & tickets', Icon: TicketIcon },
 ];
 
 // Single shared "current investigation" object, lifted here per
@@ -127,7 +128,10 @@ export default function App() {
   return (
     <div className="app-shell">
       <header className="app-header">
-        <h1>Find the Signal</h1>
+        <div className="app-header__brand">
+          <SearchIcon width={22} height={22} />
+          <h1>Find the Signal</h1>
+        </div>
         <div className="mode-switcher" role="tablist" aria-label="View" onKeyDown={handleModeKeyDown}>
           {MODE_TABS.map((tab) => {
             const isActive = tab.key === mode;
@@ -144,6 +148,7 @@ export default function App() {
                 className={isActive ? 'mode-switcher__tab is-active' : 'mode-switcher__tab'}
                 onClick={() => setMode(tab.key)}
               >
+                <tab.Icon />
                 {tab.label}
               </button>
             );

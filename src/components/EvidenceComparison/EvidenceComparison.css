@@ -19,19 +19,32 @@
 }
 
 .evidence-comparison__column ul {
+  list-style: none;
   margin: 0;
-  padding-left: 18px;
+  padding: 0;
   font-size: 0.85rem;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
-.evidence-comparison__column--supporting li::marker {
+.evidence-comparison__column li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  line-height: 1.4;
+}
+
+.evidence-comparison__column li svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.evidence-comparison__column--supporting li svg {
   color: var(--color-success-text);
 }
 
-.evidence-comparison__column--counter li::marker {
+.evidence-comparison__column--counter li svg {
   color: var(--color-danger-text);
 }
 

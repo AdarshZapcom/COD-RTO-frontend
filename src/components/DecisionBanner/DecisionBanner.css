@@ -20,9 +20,9 @@
 }
 
 .decision-banner__critical-icon {
-  font-size: 1.3rem;
-  line-height: 1.2;
+  display: inline-flex;
   flex-shrink: 0;
+  margin-top: 1px;
 }
 
 .decision-banner__critical-body {
@@ -48,6 +48,22 @@
 
 .decision-banner__critical-list li {
   margin: 2px 0;
+}
+
+.decision-banner__headline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.decision-banner__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  flex-shrink: 0;
 }
 
 .decision-banner__top {
@@ -121,6 +137,8 @@
 }
 
 .decision-banner__handoff span {
+  display: inline-flex;
+  vertical-align: -2px;
   color: var(--color-accent);
 }
 

@@ -1,4 +1,5 @@
 import { splitUncertaintyFlags } from '../../lib/format.js';
+import { FlagIcon, AlertTriangleIcon, AlertCircleIcon, InfoIcon } from '../icons/Icon.jsx';
 import './EvidencePanel.css';
 
 /**
@@ -48,8 +49,13 @@ import './EvidencePanel.css';
 export default function EvidencePanel({ investigation }) {
   if (!investigation) {
     return (
-      <div className="panel evidence-panel">
-        <h2>Evidence quality</h2>
+      <div className="tab-section evidence-panel">
+        <h2 className="panel-title">
+          <span className="panel-title__icon">
+            <FlagIcon />
+          </span>
+          Evidence quality
+        </h2>
         <p className="empty-state">No investigation selected yet.</p>
       </div>
     );
@@ -61,10 +67,20 @@ export default function EvidencePanel({ investigation }) {
   const hasAnyFlags = criticalFlags.length > 0 || warningFlags.length > 0;
 
   return (
-    <div className="panel evidence-panel">
-      <h2>Evidence quality</h2>
+    <div className="tab-section evidence-panel">
+      <h2 className="panel-title">
+        <span className="panel-title__icon">
+          <FlagIcon />
+        </span>
+        Evidence quality
+      </h2>
 
-      {advisoryFlag && <p className="evidence-panel__advisory">{advisoryFlag}</p>}
+      {advisoryFlag && (
+        <p className="evidence-panel__advisory">
+          <InfoIcon />
+          <span>{advisoryFlag}</span>
+        </p>
+      )}
 
       {!hasAnyFlags && !advisoryFlag && (
         <p className="empty-state">No uncertainty flags - evidence is sufficient for an automated decision.</p>
@@ -75,7 +91,10 @@ export default function EvidencePanel({ investigation }) {
           <h3>Critical ({criticalFlags.length})</h3>
           <ul className="evidence-panel__flags evidence-panel__flags--critical">
             {criticalFlags.map((flag) => (
-              <li key={flag}>{flag}</li>
+              <li key={flag}>
+                <AlertTriangleIcon />
+                <span>{flag}</span>
+              </li>
             ))}
           </ul>
         </div>
@@ -86,7 +105,10 @@ export default function EvidencePanel({ investigation }) {
           <h3>Warnings ({warningFlags.length})</h3>
           <ul className="evidence-panel__flags evidence-panel__flags--warning">
             {warningFlags.map((flag) => (
-              <li key={flag}>{flag}</li>
+              <li key={flag}>
+                <AlertCircleIcon />
+                <span>{flag}</span>
+              </li>
             ))}
           </ul>
         </div>

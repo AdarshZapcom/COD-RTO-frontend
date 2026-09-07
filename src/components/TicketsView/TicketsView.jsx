@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { getTickets, resolveTicket } from '../../api/client';
 import { decisionColor, riskColor, formatDecision, splitUncertaintyFlags } from '../../lib/format.js';
 import { windowedPageNumbers } from '../../lib/pagination.js';
+import { TicketIcon } from '../icons/Icon.jsx';
 import './TicketsView.css';
 
 /** Raw ticket rows join these as " | "-strings, not arrays like
@@ -217,7 +218,10 @@ export default function TicketsView() {
         {announcement}
       </div>
       <div className="tickets-view__header">
-        <h2 ref={headingRef} tabIndex={-1}>
+        <h2 className="panel-title" ref={headingRef} tabIndex={-1}>
+          <span className="panel-title__icon">
+            <TicketIcon />
+          </span>
           Open tickets
         </h2>
         <button
@@ -268,10 +272,22 @@ export default function TicketsView() {
                   <div className="tickets-view__summary">
                     <span className="tickets-view__id">{ticket.ticket_id}</span>
                     <span className="tickets-view__order">Order {ticket.order_id}</span>
-                    <span className="tickets-view__decision" style={{ color: decisionColor(ticket.decision) }}>
+                    <span
+                      className="tickets-view__decision"
+                      style={{
+                        color: decisionColor(ticket.decision),
+                        background: `color-mix(in srgb, ${decisionColor(ticket.decision)} 14%, white)`,
+                      }}
+                    >
                       {formatDecision(ticket.decision)}
                     </span>
-                    <span className="tickets-view__risk" style={{ color: riskColor(ticket.risk_level) }}>
+                    <span
+                      className="tickets-view__risk"
+                      style={{
+                        color: riskColor(ticket.risk_level),
+                        background: `color-mix(in srgb, ${riskColor(ticket.risk_level)} 14%, white)`,
+                      }}
+                    >
                       {ticket.risk_level} risk
                     </span>
                     <span className="tickets-view__confidence">{confidencePct} confidence</span>

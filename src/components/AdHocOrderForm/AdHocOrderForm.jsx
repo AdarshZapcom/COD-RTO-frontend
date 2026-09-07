@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
+import { PencilIcon } from '../icons/Icon.jsx';
 import './AdHocOrderForm.css';
 
 const EMPTY_FORM = {
@@ -145,7 +146,12 @@ export default function AdHocOrderForm({ onSubmit, submitting }) {
 
   return (
     <div className="panel adhoc-form">
-      <h2>Order check</h2>
+      <h2 className="panel-title">
+        <span className="panel-title__icon">
+          <PencilIcon />
+        </span>
+        Order check
+      </h2>
       <p className="adhoc-form__hint">
         Enter any customer / pincode / courier combination - new or existing - and submit to run a
         live investigation against it.

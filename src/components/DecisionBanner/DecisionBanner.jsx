@@ -7,7 +7,14 @@ import {
   describeScenario,
   splitUncertaintyFlags,
 } from '../../lib/format.js';
+import { CheckCircleIcon, ClockIcon, AlertOctagonIcon, AlertTriangleIcon, ArrowRightIcon } from '../icons/Icon.jsx';
 import './DecisionBanner.css';
+
+const DECISION_ICONS = {
+  RELEASE: CheckCircleIcon,
+  HOLD_FOR_VERIFICATION: ClockIcon,
+  ESCALATE: AlertOctagonIcon,
+};
 
 /**
  * GROUP 4 - owns this file + DecisionBanner.css only.
@@ -73,6 +80,7 @@ export default function DecisionBanner({ investigation }) {
   const { critical: criticalFlags, warning: warningFlags } = splitUncertaintyFlags(uncertaintyFlags);
   const warningCount = warningFlags.length;
   const scenarioDescription = describeScenario(scenario);
+  const DecisionIcon = DECISION_ICONS[decision] ?? ClockIcon;
 
   return (
     <div
@@ -82,7 +90,7 @@ export default function DecisionBanner({ investigation }) {
       {criticalFlags.length > 0 && (
         <div className="decision-banner__critical-alert" role="alert">
           <span className="decision-banner__critical-icon" aria-hidden="true">
-            ⚠
+            <AlertTriangleIcon width={22} height={22} />
           </span>
           <div className="decision-banner__critical-body">
             <span className="decision-banner__critical-title">
@@ -99,17 +107,30 @@ export default function DecisionBanner({ investigation }) {
         </div>
       )}
 
-      <div className="decision-banner__top">
-        <span className="decision-banner__decision" style={{ color: decisionColor(decision) }}>
-          {decision ? formatDecision(decision) : 'Unknown'}
-        </span>
-        <span className="decision-banner__risk" style={{ color: riskColor(riskLevel) }}>
-          Risk: {riskLevel || 'UNKNOWN'}
-        </span>
-        <span className="decision-banner__confidence">Confidence: {formatPercent(confidence)}</span>
-        {scenario && scenario !== 'NORMAL' && (
-          <span className="decision-banner__scenario">{formatScenario(scenario)}</span>
-        )}
+      <div className="decision-banner__headline">
+        <div
+          className="decision-banner__icon"
+          style={{
+            color: decisionColor(decision),
+            background: `color-mix(in srgb, ${decisionColor(decision)} 14%, white)`,
+          }}
+          aria-hidden="true"
+        >
+          <DecisionIcon width={24} height={24} />
+        </div>
+
+        <div className="decision-banner__top">
+          <span className="decision-banner__decision" style={{ color: decisionColor(decision) }}>
+            {decision ? formatDecision(decision) : 'Unknown'}
+          </span>
+          <span className="decision-banner__risk" style={{ color: riskColor(riskLevel) }}>
+            Risk: {riskLevel || 'UNKNOWN'}
+          </span>
+          <span className="decision-banner__confidence">Confidence: {formatPercent(confidence)}</span>
+          {scenario && scenario !== 'NORMAL' && (
+            <span className="decision-banner__scenario">{formatScenario(scenario)}</span>
+          )}
+        </div>
       </div>
 
       {confidenceFactors.length > 0 && (
@@ -130,7 +151,10 @@ export default function DecisionBanner({ investigation }) {
 
       {decision && decision !== 'RELEASE' && (
         <p className="decision-banner__handoff">
-          <span aria-hidden="true">→</span> Handed off to a human ops reviewer
+          <span aria-hidden="true">
+            <ArrowRightIcon />
+          </span>{' '}
+          Handed off to a human ops reviewer
           {ticketId ? ` - ticket ${ticketId}` : ''}
         </p>
       )}

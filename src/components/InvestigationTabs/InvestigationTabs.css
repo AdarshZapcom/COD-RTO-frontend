@@ -10,13 +10,22 @@
   gap: 4px;
   flex-shrink: 0;
   border-bottom: 1px solid var(--color-border);
+  /* Bleed to the parent `.panel`'s outer edge (negative margin cancels
+     its padding exactly - same technique DecisionBanner's critical
+     alert bar uses) so the tab strip reads as the card's own top
+     strip, not an inset row floating inside it. */
+  margin: calc(-1 * var(--space-md)) calc(-1 * var(--space-md)) 0;
+  padding: 0 var(--space-md);
 }
 
 .investigation-tabs__tab {
+  display: flex;
+  align-items: center;
+  gap: 7px;
   margin-bottom: -1px;
   padding: 10px 16px;
   border: none;
-  border-bottom: 2px solid transparent;
+  border-bottom: 2.5px solid transparent;
   background: transparent;
   color: var(--color-text-muted);
   font-size: 0.85rem;
@@ -29,13 +38,16 @@
 }
 
 .investigation-tabs__tab.is-active {
-  color: var(--color-text);
-  border-bottom-color: var(--color-accent);
+  color: var(--color-secondary);
+  border-bottom-color: var(--color-secondary);
 }
 
 .investigation-tabs__panel {
   flex: 1;
   min-height: 0;
-  padding-top: var(--space-md);
   overflow-y: auto;
+  /* Bleed the content area's sides too, so its `.tab-section` children
+     (each carrying their own 20px padding) sit flush with the card's
+     edges instead of stacking the card's own padding on top of theirs. */
+  margin: 0 calc(-1 * var(--space-md));
 }
