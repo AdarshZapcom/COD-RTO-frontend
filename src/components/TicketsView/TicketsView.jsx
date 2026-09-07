@@ -23,15 +23,33 @@ const EMPTY_RESOLVE_FORM = { resolvedBy: '', resolutionNote: '', resolutionOutco
 // actual question a reviewer is answering (ship this order COD or
 // not), not a generic status list. Must match api.py's
 // RESOLUTION_OUTCOMES allowlist exactly.
+// `label` is the full descriptive text used only in the resolve form
+// itself (spelling out the real-world consequence at the moment
+// someone is actually making the call). `short` is the same outcome
+// in filter/badge form - deliberately not "Hold", since that word
+// already means the automated, pre-review HOLD_FOR_VERIFICATION
+// decision elsewhere in this same view; reusing it here for a human's
+// *final* call would make "Hold" mean two different things depending
+// on which tab you're looking at.
 const RESOLUTION_OUTCOMES = [
-  { value: 'VERIFIED_RELEASE', label: 'Verified — release (ship COD)' },
-  { value: 'RISKY_BLOCK_COD', label: 'Risky — block COD (cancel / prepaid only)' },
-  { value: 'ESCALATE_MANAGER', label: 'Escalate to manager' },
+  { value: 'VERIFIED_RELEASE', label: 'Verified — release (ship COD)', short: 'Release' },
+  { value: 'RISKY_BLOCK_COD', label: 'Risky — block COD (cancel / prepaid only)', short: 'Risky (block COD)' },
+  { value: 'ESCALATE_MANAGER', label: 'Escalate to manager', short: 'Escalated' },
 ];
 
 const RESOLUTION_OUTCOME_LABELS = Object.fromEntries(
-  RESOLUTION_OUTCOMES.map((option) => [option.value, option.label])
+  RESOLUTION_OUTCOMES.map((option) => [option.value, option.short])
 );
+
+// Resolved-tab options for the shared "Decision" filter slot (see
+// hasActiveFilter/decisionFilter above) - same values as
+// RESOLUTION_OUTCOMES, reshaped with a leading "All" to match
+// DECISION_FILTERS/RISK_FILTERS' shape, and using the short label so
+// the dropdown stays scannable.
+const OUTCOME_FILTERS = [
+  { value: '', label: 'All' },
+  ...RESOLUTION_OUTCOMES.map((option) => ({ value: option.value, label: option.short })),
+];
 
 // Client-side declutter filters over the currently-loaded page of
 // tickets - not a new backend query param (GET /tickets has no
@@ -109,6 +127,15 @@ export default function TicketsView() {
   // as resolved just because the toggle already says Resolved.
   const [ticketsStatus, setTicketsStatus] = useState('OPEN');
 
+  // One "Decision" filter slot shared by both tabs, but what it filters
+  // on switches with ticketsStatus: Open tickets only ever have the
+  // automated decision (HOLD_FOR_VERIFICATION/ESCALATE - decision),
+  // Resolved tickets are filtered by what the human reviewer actually
+  // chose instead (VERIFIED_RELEASE/RISKY_BLOCK_COD/ESCALATE_MANAGER -
+  // resolution_outcome) - the automated decision no longer being the
+  // interesting question once a human has already acted on it. Reset
+  // on every tab switch (handleStatusTabChange) since a value picked
+  // under one tab's option list means nothing under the other's.
   const [decisionFilter, setDecisionFilter] = useState('');
   const [riskFilter, setRiskFilter] = useState('');
   const hasActiveFilter = decisionFilter !== '' || riskFilter !== '';
@@ -248,6 +275,11 @@ export default function TicketsView() {
     // stale form hanging off a ticket no longer even in view.
     setActiveTicketId(null);
     setResolveForm(EMPTY_RESOLVE_FORM);
+    // The Decision filter's option list (and the field it filters on)
+    // changes with the tab - a value picked under one tab's options
+    // means nothing under the other's, so drop it rather than carry a
+    // stale filter across.
+    setDecisionFilter('');
     setStatusTab(nextStatus);
   }
 
@@ -328,7 +360,8 @@ export default function TicketsView() {
 
   const visibleTickets = tickets.filter(
     (t) =>
-      (decisionFilter === '' || t.decision === decisionFilter) &&
+      (decisionFilter === '' ||
+        (ticketsStatus === 'RESOLVED' ? t.resolution_outcome === decisionFilter : t.decision === decisionFilter)) &&
       (riskFilter === '' || t.risk_level === riskFilter),
   );
 
@@ -398,7 +431,7 @@ export default function TicketsView() {
           <label className="tickets-view__filter-field">
             <span>Decision</span>
             <select value={decisionFilter} onChange={(event) => setDecisionFilter(event.target.value)}>
-              {DECISION_FILTERS.map((option) => (
+              {(ticketsStatus === 'RESOLVED' ? OUTCOME_FILTERS : DECISION_FILTERS).map((option) => (
                 <option key={option.value || 'all'} value={option.value}>
                   {option.label}
                 </option>
