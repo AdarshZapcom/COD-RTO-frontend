@@ -136,7 +136,7 @@ body {
   color: var(--color-chrome-text);
 }
 
-/* The "Q" in the SignallQ wordmark is always the brand's accent blue,
+/* The "Q" in the SignaliQ wordmark is always the brand's accent blue,
    matching the logo artwork - kept as var(--color-accent) rather than a
    hardcoded hex so it stays in lockstep if the accent color ever
    changes (see index.css's design-tokens comment at the top). */
