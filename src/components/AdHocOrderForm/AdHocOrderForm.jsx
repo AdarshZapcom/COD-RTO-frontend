@@ -1,4 +1,4 @@
-import { useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import './AdHocOrderForm.css';
 
 const EMPTY_FORM = {
@@ -43,7 +43,12 @@ function validate(form) {
 
   if (!form.pincode.trim()) {
     errors.pincode = 'Pincode is required.';
-  } else if (!/^\d+$/.test(form.pincode.trim())) {
+  } else if (!/^\d+(\.0+)?$/.test(form.pincode.trim())) {
+    // The backend (analytics.normalize_pincode) treats a float-suffixed
+    // numeric string ("560001.0") the same as a bare integer one, so
+    // this must accept that shape too - rejecting it here made the
+    // backend's own str-or-int-interchangeable fix unreachable through
+    // this form.
     errors.pincode = 'Pincode should contain digits only.';
   }
 
@@ -116,6 +121,21 @@ export default function AdHocOrderForm({ onSubmit, submitting }) {
   const [errors, setErrors] = useState({});
   const fieldRefs = useRef({});
 
+  // `submitting` is React state, so it only updates on the next render -
+  // two `.click()` calls fired in the same tick (no render between them)
+  // both still close over the *old* `submitting` value and both pass the
+  // `if (submitting) return` guard below, firing two real POST requests.
+  // This ref is a plain synchronous flag: set to true the instant the
+  // first submit fires, so a same-tick second call sees it immediately,
+  // then kept in sync with the real `submitting` prop once React has
+  // actually re-rendered (covers the request finishing/failing without
+  // this component re-mounting).
+  const submittingRef = useRef(false);
+
+  useEffect(() => {
+    submittingRef.current = submitting;
+  }, [submitting]);
+
   function fieldId(name) {
     return `${uid}-${name}`;
   }
@@ -140,7 +160,7 @@ export default function AdHocOrderForm({ onSubmit, submitting }) {
 
   function handleSubmit(event) {
     event.preventDefault();
-    if (submitting) return;
+    if (submitting || submittingRef.current) return;
 
     const nextErrors = validate(form);
     setErrors(nextErrors);
@@ -151,6 +171,7 @@ export default function AdHocOrderForm({ onSubmit, submitting }) {
       return;
     }
 
+    submittingRef.current = true;
     onSubmit(buildPayload(form));
   }
 
